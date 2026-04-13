@@ -1,0 +1,11 @@
+﻿# IDE and build
+.idea/
+*.iml
+target/
+node_modules/
+# OS
+.DS_Store
+# logs
+*.log
+# env
+.env
