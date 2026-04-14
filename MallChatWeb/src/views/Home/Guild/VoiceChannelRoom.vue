@@ -12,7 +12,7 @@
           </el-button>
         </div>
       </div>
-      
+
       <template v-else>
         <div class="voice-room-header">
           <div class="room-info">
@@ -31,7 +31,7 @@
             </el-button>
           </div>
         </div>
-        
+
         <div class="members-list" v-if="displayMembers.length > 0">
           <div
             v-for="member in displayMembers"
@@ -45,8 +45,8 @@
             @contextmenu.prevent="handleContextMenu($event, member)"
           >
             <div class="member-avatar">
-              <img 
-                :src="member.avatar || defaultAvatar" 
+              <img
+                :src="member.avatar || defaultAvatar"
                 :alt="member.name"
                 @error="handleAvatarError($event)"
               />
@@ -70,19 +70,19 @@
             </div>
           </div>
         </div>
-        
+
         <el-empty v-else description="暂无在线成员" :image-size="80" class="empty-state" />
-        
+
         <div class="voice-control-bar">
-          <VoiceControl 
-            :voice-room-id="channelId" 
+          <VoiceControl
+            :voice-room-id="channelId"
             :use-api="true"
-            @leave="handleVoiceControlLeave" 
+            @leave="handleVoiceControlLeave"
           />
         </div>
       </template>
     </div>
-    
+
     <audio
       v-for="[uid, stream] in remoteStreams"
       :key="uid"
@@ -129,7 +129,6 @@ const audioRefs = ref<Map<number, HTMLAudioElement>>(new Map())
 const contextMenuVisible = ref(false)
 const contextMenuPosition = ref({ x: 0, y: 0 })
 const selectedMember = ref<VoiceMemberType | null>(null)
-let memberPollingTimer: ReturnType<typeof setInterval> | null = null
 let isLeaving = false
 
 const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxOCIgZmlsbD0iI2UzZTNlMyIvPjxwYXRoIGQ9Ik0yMCAyN2M1LjUgMCAxMCA0LjUgMTAgMTBjMCA1LjUtNC41IDEwLTEwIDEwcy0xMC00LjUtMTAtMTBjMC01LjUgNC41LTEwIDEwLTEweiIgZmlsbD0iI2IzYjNiMyIvPjwvc3ZnPg=='
@@ -137,7 +136,7 @@ const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0
 const displayMembers = computed(() => {
   const result: VoiceMemberType[] = []
   const seenUids = new Set<number>()
-  
+
   members.value.forEach(m => {
     if (!seenUids.has(m.uid)) {
       seenUids.add(m.uid)
@@ -151,7 +150,7 @@ const displayMembers = computed(() => {
       })
     }
   })
-  
+
   const currentUserUid = userStore.userInfo?.uid
   if (currentUserUid && !seenUids.has(currentUserUid)) {
     result.push({
@@ -163,7 +162,7 @@ const displayMembers = computed(() => {
       speaking: 0
     })
   }
-  
+
   return result
 })
 
@@ -228,21 +227,22 @@ const handleMemberKicked = (uid: number) => {
 }
 
 const fetchChannelInfo = async () => {
+  debugger
   if (!props.channelId) return
   try {
     const res = await guildApis.getVoiceChannelMembers(props.channelId)
     console.log('=== 获取语音频道成员 ===')
     console.log('API返回数据:', JSON.stringify(res, null, 2))
     console.log('当前用户UID:', userStore.userInfo?.uid)
-    
+
     if (res) {
       if (Array.isArray(res) && res.length > 0) {
         const channelData = res[0]
         channel.value = channelData
-        
+
         const allMembers: ChannelMemberType[] = []
         const seenUids = new Set<number>()
-        
+
         res.forEach((ch: ChannelType) => {
           if (ch.members && Array.isArray(ch.members)) {
             ch.members.forEach((m: ChannelMemberType) => {
@@ -253,10 +253,10 @@ const fetchChannelInfo = async () => {
             })
           }
         })
-        
+
         console.log('合并后成员列表:', allMembers)
         console.log('合并后成员数量:', allMembers.length)
-        
+
         members.value = allMembers
       } else if (res.members) {
         channel.value = res as unknown as ChannelType
@@ -286,9 +286,9 @@ const fetchChannelInfo = async () => {
 
 const handleVoiceRoomUpdate = (update: VoiceRoomUpdateType) => {
   if (update.voiceRoomId !== props.channelId) return
-  
+
   console.log('收到语音房间更新:', update)
-  
+
   if (update.action === 'join' && update.member) {
     const existingIndex = members.value.findIndex(m => m.uid === update.member!.uid)
     if (existingIndex === -1) {
@@ -300,11 +300,11 @@ const handleVoiceRoomUpdate = (update: VoiceRoomUpdateType) => {
         deafened: update.member.deafened,
         speaking: update.member.speaking
       })
-      
+
       if (update.member.uid !== userStore.userInfo.uid) {
         voiceChat.createOffer(update.member.uid)
       }
-      
+
       ElMessage.info(`${update.member.name} 加入了语音频道`)
     }
   } else if (update.action === 'leave' && update.member) {
@@ -322,7 +322,7 @@ const handleVoiceRoomUpdate = (update: VoiceRoomUpdateType) => {
       member.speaking = update.member.speaking
     }
   }
-  
+
   if (update.members) {
     const uniqueMembers: ChannelMemberType[] = []
     const seenUids = new Set<number>()
@@ -343,30 +343,14 @@ const handleVoiceRoomUpdate = (update: VoiceRoomUpdateType) => {
   }
 }
 
-const startMemberPolling = () => {
-  if (memberPollingTimer) return
-  memberPollingTimer = setInterval(() => {
-    if (isJoined.value) {
-      fetchChannelInfo()
-    }
-  }, 3000)
-}
-
-const stopMemberPolling = () => {
-  if (memberPollingTimer) {
-    clearInterval(memberPollingTimer)
-    memberPollingTimer = null
-  }
-}
-
 const joinChannel = async () => {
   joining.value = true
   try {
     ElMessage.info('正在加入语音频道...')
-    
+
     await voiceChat.init()
     voiceChat.joinRoom(props.channelId, userStore.userInfo.uid!)
-    
+
     voiceChat.setCallbacks(
       (uid, stream) => {
         console.log('收到远程音频流:', uid)
@@ -384,22 +368,21 @@ const joinChannel = async () => {
         audioRefs.value.delete(uid)
       },
     )
-    
+
     await guildApis.joinVoiceChannel(props.channelId)
     isJoined.value = true
-    
+
     await fetchChannelInfo()
-    
+
     for (const member of members.value) {
       if (member.uid !== userStore.userInfo.uid) {
         console.log('向成员创建Offer:', member.uid, member.name)
         await voiceChat.createOffer(member.uid)
       }
     }
-    
+
     voiceEventBus.on('voiceRoomUpdate', handleVoiceRoomUpdate)
-    startMemberPolling()
-    
+
     ElMessage.success(`已加入语音频道，当前 ${displayMembers.value.length} 人在线`)
   } catch (error) {
     console.error('加入语音频道失败', error)
@@ -424,21 +407,20 @@ const refreshMembers = async () => {
 const leaveChannel = async () => {
   if (isLeaving) return
   isLeaving = true
-  
+
   try {
     console.log('离开语音频道...')
-    
+
     await guildApis.leaveVoiceChannel(props.channelId)
     voiceChat.leaveRoom()
-    
+
     voiceEventBus.off('voiceRoomUpdate', handleVoiceRoomUpdate)
-    stopMemberPolling()
-    
+
     isJoined.value = false
     remoteStreams.value.clear()
     audioRefs.value.clear()
     members.value = []
-    
+
     ElMessage.success('已离开语音频道')
   } catch (error) {
     console.error('离开语音频道失败', error)
@@ -467,7 +449,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   voiceEventBus.off('voiceRoomUpdate', handleVoiceRoomUpdate)
-  stopMemberPolling()
   if (isJoined.value) {
     voiceChat.leaveRoom()
   }

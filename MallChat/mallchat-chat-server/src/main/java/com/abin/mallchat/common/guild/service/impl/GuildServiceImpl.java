@@ -26,6 +26,7 @@ import com.abin.mallchat.common.guild.domain.vo.response.ChannelMemberResp;
 import com.abin.mallchat.common.guild.domain.vo.response.ChannelResp;
 import com.abin.mallchat.common.guild.domain.vo.response.GuildResp;
 import com.abin.mallchat.common.guild.service.GuildService;
+import com.abin.mallchat.common.guild.service.GuildVoiceBroadcastService;
 import com.abin.mallchat.common.user.dao.UserDao;
 import com.abin.mallchat.common.user.domain.entity.User;
 import lombok.extern.slf4j.Slf4j;
@@ -63,6 +64,9 @@ public class GuildServiceImpl implements GuildService {
     
     @Autowired
     private GroupMemberDao groupMemberDao;
+    
+    @Autowired
+    private GuildVoiceBroadcastService guildVoiceBroadcastService;
     
     @Override
     @Transactional
@@ -406,13 +410,30 @@ public class GuildServiceImpl implements GuildService {
         member.setMuted(0);
         member.setDeafened(0);
         member.setSpeaking(0);
+        member.setVolume(100);
         channelMemberDao.save(member);
+        
+        ChannelMemberResp memberResp = buildChannelMemberResp(member);
+        guildVoiceBroadcastService.broadcastVoiceChannelUpdate(channelId, "join", memberResp);
+        
+        log.info("用户 {} 加入语音频道 {}", uid, channelId);
     }
     
     @Override
     @Transactional
     public void leaveVoiceChannel(Long uid, Long channelId) {
+        ChannelMember member = channelMemberDao.getMember(channelId, uid);
+        if (member == null) {
+            return;
+        }
+        
+        ChannelMemberResp memberResp = buildChannelMemberResp(member);
+        
         channelMemberDao.removeMember(channelId, uid);
+        
+        guildVoiceBroadcastService.broadcastVoiceChannelUpdate(channelId, "leave", memberResp);
+        
+        log.info("用户 {} 离开语音频道 {}", uid, channelId);
     }
     
     @Override
@@ -559,5 +580,22 @@ public class GuildServiceImpl implements GuildService {
                 }
             }
         }
+    }
+    
+    private ChannelMemberResp buildChannelMemberResp(ChannelMember member) {
+        ChannelMemberResp resp = new ChannelMemberResp();
+        resp.setUid(member.getUid());
+        resp.setMuted(member.getMuted());
+        resp.setDeafened(member.getDeafened());
+        resp.setSpeaking(member.getSpeaking());
+        resp.setVolume(member.getVolume() != null ? member.getVolume() : 100);
+        
+        User user = userDao.getById(member.getUid());
+        if (user != null) {
+            resp.setName(user.getName());
+            resp.setAvatar(user.getAvatar());
+        }
+        
+        return resp;
     }
 }

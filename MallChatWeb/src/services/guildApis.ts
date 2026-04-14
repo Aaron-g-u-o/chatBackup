@@ -47,5 +47,6 @@ export default {
   getVoiceChannelMembers: (channelId: number) =>
     alovaIns.Get<ChannelType[]>(`${prefix}/capi/guild/channel/voice/members/${channelId}`, {
       timeout: 10000,
+      cacheFor: null,
     }),
 }
