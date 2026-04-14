@@ -45,5 +45,7 @@ export default {
     alovaIns.Post<void>(`${prefix}/capi/guild/channel/voice/leave/${channelId}`),
   
   getVoiceChannelMembers: (channelId: number) =>
-    alovaIns.Get<ChannelType[]>(`${prefix}/capi/guild/channel/voice/members/${channelId}`),
+    alovaIns.Get<ChannelType[]>(`${prefix}/capi/guild/channel/voice/members/${channelId}`, {
+      timeout: 10000,
+    }),
 }

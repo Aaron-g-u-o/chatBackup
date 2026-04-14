@@ -10,4 +10,5 @@ public class ChannelMemberResp {
     private Integer muted;
     private Integer deafened;
     private Integer speaking;
+    private Integer volume;
 }

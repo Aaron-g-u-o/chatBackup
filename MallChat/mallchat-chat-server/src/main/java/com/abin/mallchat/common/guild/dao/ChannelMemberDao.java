@@ -29,4 +29,20 @@ public class ChannelMemberDao extends ServiceImpl<ChannelMemberMapper, ChannelMe
                 .eq(ChannelMember::getUid, uid)
                 .remove();
     }
+    
+    public void updateMemberVolume(Long channelId, Long uid, Integer volume) {
+        lambdaUpdate()
+                .eq(ChannelMember::getChannelId, channelId)
+                .eq(ChannelMember::getUid, uid)
+                .set(ChannelMember::getVolume, volume)
+                .update();
+    }
+    
+    public void updateMemberMuted(Long channelId, Long uid, Integer muted) {
+        lambdaUpdate()
+                .eq(ChannelMember::getChannelId, channelId)
+                .eq(ChannelMember::getUid, uid)
+                .set(ChannelMember::getMuted, muted)
+                .update();
+    }
 }

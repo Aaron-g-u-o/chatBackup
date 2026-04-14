@@ -13,12 +13,12 @@
         <el-button
           :type="deafened ? 'warning' : 'default'"
           circle
-          :icon="deafened ? Headset : Headset"
+          :icon="Headset"
           @click="toggleDeafen"
         />
       </el-tooltip>
       <el-tooltip content="离开语音" placement="top">
-        <el-button type="danger" circle :icon="PhoneFilled" @click="leaveRoom" />
+        <el-button type="danger" circle :icon="PhoneFilled" @click="handleLeave" />
       </el-tooltip>
     </div>
     <div class="volume-indicator">
@@ -35,7 +35,6 @@ import voiceApis from '@/services/voiceApis'
 
 const props = defineProps<{
   voiceRoomId: number
-  customLeave?: () => Promise<void>
   useApi?: boolean
 }>()
 
@@ -61,26 +60,29 @@ onUnmounted(() => {
 const toggleMute = async () => {
   muted.value = !muted.value
   voiceChat.setMuted(muted.value)
-  if (props.useApi !== false) {
-    await voiceApis.updateStatus(props.voiceRoomId, { muted: muted.value })
+  if (props.useApi !== false && props.voiceRoomId) {
+    try {
+      await voiceApis.updateStatus(props.voiceRoomId, { muted: muted.value })
+    } catch (error) {
+      console.error('更新静音状态失败:', error)
+    }
   }
 }
 
 const toggleDeafen = async () => {
   deafened.value = !deafened.value
   voiceChat.setDeafened(deafened.value)
-  if (props.useApi !== false) {
-    await voiceApis.updateStatus(props.voiceRoomId, { deafened: deafened.value })
+  if (props.useApi !== false && props.voiceRoomId) {
+    try {
+      await voiceApis.updateStatus(props.voiceRoomId, { deafened: deafened.value })
+    } catch (error) {
+      console.error('更新闭麦状态失败:', error)
+    }
   }
 }
 
-const leaveRoom = async () => {
-  if (props.customLeave) {
-    await props.customLeave()
-  } else {
-    await voiceApis.leaveRoom(props.voiceRoomId)
-  }
-  voiceChat.leaveRoom()
+const handleLeave = () => {
+  console.log('VoiceControl: 触发离开事件')
   emit('leave')
 }
 
@@ -88,32 +90,39 @@ const startVolumeMonitor = () => {
   const stream = voiceChat.getLocalStream()
   if (!stream) return
 
-  audioContext = new AudioContext()
-  analyser = audioContext.createAnalyser()
-  const source = audioContext.createMediaStreamSource(stream)
-  source.connect(analyser)
-  analyser.fftSize = 256
+  try {
+    audioContext = new AudioContext()
+    analyser = audioContext.createAnalyser()
+    const source = audioContext.createMediaStreamSource(stream)
+    source.connect(analyser)
+    analyser.fftSize = 256
 
-  const dataArray = new Uint8Array(analyser.frequencyBinCount)
+    const dataArray = new Uint8Array(analyser.frequencyBinCount)
 
-  const updateVolume = () => {
-    if (!analyser) return
-    analyser.getByteFrequencyData(dataArray)
-    const average = dataArray.reduce((a, b) => a + b, 0) / dataArray.length
-    volumeLevel.value = Math.min(100, (average / 128) * 100)
-    animationId = requestAnimationFrame(updateVolume)
+    const updateVolume = () => {
+      if (!analyser) return
+      analyser.getByteFrequencyData(dataArray)
+      const average = dataArray.reduce((a, b) => a + b, 0) / dataArray.length
+      volumeLevel.value = Math.min(100, (average / 128) * 100)
+      animationId = requestAnimationFrame(updateVolume)
+    }
+
+    updateVolume()
+  } catch (error) {
+    console.error('启动音量监控失败:', error)
   }
-
-  updateVolume()
 }
 
 const stopVolumeMonitor = () => {
   if (animationId) {
     cancelAnimationFrame(animationId)
+    animationId = null
   }
   if (audioContext) {
     audioContext.close()
+    audioContext = null
   }
+  analyser = null
 }
 </script>
 

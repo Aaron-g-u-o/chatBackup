@@ -21,6 +21,8 @@ public class ChannelMember {
     
     private Integer speaking;
     
+    private Integer volume;
+    
     @TableField(fill = FieldFill.INSERT)
     private Date joinTime;
 }

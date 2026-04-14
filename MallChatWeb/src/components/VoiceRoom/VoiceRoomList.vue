@@ -25,8 +25,9 @@
               <img
                 v-for="member in room.members.slice(0, 3)"
                 :key="member.uid"
-                :src="member.avatar"
+                :src="member.avatar || defaultAvatar"
                 :alt="member.name"
+                @error="handleAvatarError"
               />
               <span v-if="room.members.length > 3">+{{ room.members.length - 3 }}</span>
             </span>
@@ -34,6 +35,8 @@
         </div>
       </div>
     </div>
+
+    <el-empty v-if="!rooms.length && !loading" description="暂无可用语音房间" />
 
     <el-dialog v-model="showCreateDialog" title="创建语音房间" width="400px">
       <el-form :model="createForm" label-width="80px">
@@ -46,7 +49,7 @@
       </el-form>
       <template #footer>
         <el-button @click="showCreateDialog = false">取消</el-button>
-        <el-button type="primary" @click="createRoom">创建</el-button>
+        <el-button type="primary" @click="createRoom" :loading="creating">创建</el-button>
       </template>
     </el-dialog>
   </div>
@@ -55,6 +58,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { Headset } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import type { VoiceRoomType } from '@/services/voiceTypes'
 import voiceApis from '@/services/voiceApis'
 
@@ -69,40 +73,70 @@ const emit = defineEmits<{
 const rooms = ref<VoiceRoomType[]>([])
 const currentRoomId = ref<number | null>(null)
 const showCreateDialog = ref(false)
+const creating = ref(false)
+const loading = ref(false)
 const createForm = ref({
   name: '',
   maxUsers: 10,
 })
 
+const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxMCIgY3k9IjEwIiByPSI4IiBmaWxsPSIjZTNlM2UzIi8+PHBhdGggZD0iTTEwIDE1YzIuMiAwIDQtMS43OCA0LTRzLTEuOC00LTQtNHMtNC0xLjc4LTQtNHMtNCAxLjc4LTQgNHMxLjggNCA0IDR6IiBmaWxsPSIjYjNiM2MzIi8+PC9zdmc+'
+
+const handleAvatarError = (event: Event) => {
+  const img = event.target as HTMLImageElement
+  img.src = defaultAvatar
+}
+
 const fetchRooms = async () => {
-  const res = await voiceApis.getRoomList()
-  rooms.value = res.data || []
+  loading.value = true
+  try {
+    const res = await voiceApis.getRoomList()
+    rooms.value = res || []
+  } catch (error) {
+    console.error('获取房间列表失败', error)
+    ElMessage.error('获取房间列表失败')
+  } finally {
+    loading.value = false
+  }
 }
 
 const joinRoom = async (room: VoiceRoomType) => {
   try {
     const res = await voiceApis.joinRoom(room.id)
-    currentRoomId.value = room.id
-    emit('join', res.data)
+    if (res) {
+      currentRoomId.value = room.id
+      emit('join', res)
+    }
   } catch (error) {
     console.error('加入语音房间失败', error)
+    ElMessage.error('加入语音房间失败，请重试')
   }
 }
 
 const createRoom = async () => {
-  if (!createForm.value.name) return
+  if (!createForm.value.name) {
+    ElMessage.warning('请输入房间名称')
+    return
+  }
   
+  creating.value = true
   try {
     const res = await voiceApis.createRoom({
       roomId: props.roomId,
       name: createForm.value.name,
       maxUsers: createForm.value.maxUsers,
     })
-    rooms.value.unshift(res.data)
-    showCreateDialog.value = false
-    createForm.value.name = ''
+    if (res) {
+      rooms.value.unshift(res)
+      showCreateDialog.value = false
+      createForm.value.name = ''
+      ElMessage.success('创建成功')
+    }
   } catch (error) {
     console.error('创建语音房间失败', error)
+    ElMessage.error('创建失败，请重试')
+  } finally {
+    creating.value = false
   }
 }
 
@@ -194,6 +228,8 @@ defineExpose({
       border-radius: 50%;
       margin-left: -4px;
       border: 1px solid var(--color-bg-2);
+      object-fit: cover;
+      background: var(--color-bg-3);
 
       &:first-child {
         margin-left: 0;

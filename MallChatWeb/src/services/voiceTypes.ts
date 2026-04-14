@@ -44,3 +44,32 @@ export type CreateVoiceRoomReq = {
   name: string
   maxUsers?: number
 }
+
+export type VoiceMemberStatusType = 'online' | 'offline' | 'muted'
+
+export type VoiceMemberVolumeType = {
+  uid: number
+  volume: number
+  muted: boolean
+}
+
+export type VoiceConnectionStateType = {
+  uid: number
+  connectionState: RTCPeerConnectionState
+  latency: number
+  quality: 'excellent' | 'good' | 'poor' | 'unknown'
+  lastUpdateTime: number
+}
+
+export type VoiceMemberManageActionType = {
+  action: 'setVolume' | 'mute' | 'unmute' | 'kick' | 'viewStatus'
+  targetUid: number
+  voiceRoomId: number
+  value?: number
+}
+
+export type VoiceMemberManageResultType = {
+  success: boolean
+  message: string
+  member?: VoiceMemberType
+}

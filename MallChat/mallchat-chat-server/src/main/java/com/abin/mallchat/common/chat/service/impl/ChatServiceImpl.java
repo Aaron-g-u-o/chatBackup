@@ -122,7 +122,7 @@ public class ChatServiceImpl implements ChatService {
         }
         if (room.isRoomGroup()) {
             RoomGroup roomGroup = roomGroupCache.get(request.getRoomId());
-            GroupMember member = groupMemberDao.getMember(roomGroup.getRoomId(), uid);
+            GroupMember member = groupMemberDao.getMember(roomGroup.getId(), uid);
             AssertUtil.isNotEmpty(member, "您已经被移除该群");
         }
 
