@@ -190,7 +190,11 @@ public class RoomAppServiceImpl implements RoomAppService {
             return MemberAdapter.buildMemberList(memberList);
         } else {
             RoomGroup roomGroup = roomGroupCache.get(request.getRoomId());
+            AssertUtil.isNotEmpty(roomGroup, "群组不存在");
             List<Long> memberUidList = groupMemberDao.getMemberUidList(roomGroup.getId());
+            if (CollectionUtil.isEmpty(memberUidList)) {
+                return new ArrayList<>();
+            }
             Map<Long, User> batch = userInfoCache.getBatch(memberUidList);
             return MemberAdapter.buildMemberList(batch);
         }

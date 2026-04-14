@@ -24,6 +24,10 @@ export enum WsResponseMessageType {
   RequestNewFriend,
   /** 新好友会话 */
   NewFriendSession,
+  /** 语音信令 */
+  VoiceSignal = 12,
+  /** 语音房间更新 */
+  VoiceRoomUpdate = 13,
 }
 
 /**
@@ -36,6 +40,8 @@ export enum WsRequestMsgType {
   HeartBeatDetection,
   /** 3用户认证 */
   Authorization,
+  /** 4语音信令 */
+  VoiceSignal,
 }
 
 export type WsReqMsgContentType = {

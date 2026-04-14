@@ -5,6 +5,8 @@ const HomeView = () => import(/* webpackChunkName: "Home" */ '@/views/Home/index
 const HomeChatView = () => import(/* webpackChunkName: "Home" */ '@/views/Home/Chat/index.vue')
 const HomeContactsView = () =>
   import(/* webpackChunkName: "Home" */ '@/views/Home/Contacts/index.vue')
+const GuildView = () =>
+  import(/* webpackChunkName: "Guild" */ '@/views/Home/Guild/index.vue')
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -23,6 +25,11 @@ const router = createRouter({
           path: 'contact',
           name: 'contact',
           component: HomeContactsView,
+        },
+        {
+          path: 'guild',
+          name: 'guild',
+          component: GuildView,
         },
       ],
     },

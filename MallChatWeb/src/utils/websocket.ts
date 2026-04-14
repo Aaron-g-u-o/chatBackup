@@ -13,11 +13,21 @@ import type {
   OnStatusChangeType,
 } from './wsType'
 import type { MessageType, MarkItemType, RevokedMsgType } from '@/services/types'
+import type { VoiceSignalType, VoiceRoomUpdateType } from '@/services/voiceTypes'
 import { OnlineEnum, ChangeTypeEnum, RoomTypeEnum } from '@/enums'
 import { computedToken } from '@/services/request'
 import { worker } from './initWorker'
 import shakeTitle from '@/utils/shakeTitle'
 import notify from '@/utils/notification'
+import { voiceChat } from '@/utils/voiceChat'
+import mitt from 'mitt'
+
+type VoiceEvents = {
+  voiceSignal: VoiceSignalType
+  voiceRoomUpdate: VoiceRoomUpdateType
+}
+
+export const voiceEventBus = mitt<VoiceEvents>()
 
 class WS {
   #tasks: WsReqMsgContentType[] = []
@@ -248,6 +258,19 @@ class WS {
             // TODO 添加一条入群的消息
           }
         }
+        break
+      }
+      // 语音信令
+      case WsResponseMessageType.VoiceSignal: {
+        const signal = params.data as VoiceSignalType
+        voiceChat.handleSignal(signal)
+        voiceEventBus.emit('voiceSignal', signal)
+        break
+      }
+      // 语音房间更新
+      case WsResponseMessageType.VoiceRoomUpdate: {
+        const update = params.data as VoiceRoomUpdateType
+        voiceEventBus.emit('voiceRoomUpdate', update)
         break
       }
       default: {

@@ -7,6 +7,7 @@ import com.abin.mallchat.common.user.domain.enums.WSReqTypeEnum;
 import com.abin.mallchat.common.user.domain.vo.request.ws.WSAuthorize;
 import com.abin.mallchat.common.user.domain.vo.request.ws.WSBaseReq;
 import com.abin.mallchat.common.user.service.WebSocketService;
+import com.abin.mallchat.common.voice.handler.VoiceSignalHandler;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -22,11 +23,13 @@ import lombok.extern.slf4j.Slf4j;
 public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
 
     private WebSocketService webSocketService;
+    private VoiceSignalHandler voiceSignalHandler;
 
     // 当web客户端连接后，触发该方法
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
         this.webSocketService = getService();
+        this.voiceSignalHandler = new VoiceSignalHandler();
     }
 
     // 客户端离线
@@ -101,6 +104,9 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
                 log.info("请求二维码 = " + msg.text());
                 break;
             case HEARTBEAT:
+                break;
+            case VOICE_SIGNAL:
+                this.voiceSignalHandler.handleSignal(ctx.channel(), wsBaseReq.getData());
                 break;
             default:
                 log.info("未知类型");

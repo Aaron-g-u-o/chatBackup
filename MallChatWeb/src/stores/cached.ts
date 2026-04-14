@@ -88,20 +88,31 @@ export const useCachedStore = defineStore(
 
     /** 房间内的所有群成员列表-@专用 */
     const initAllUserBaseInfo = async () => {
+      // 检查是否在服务器频道页面
+      if (window.location.pathname.startsWith('/guild')) return
       if (localStorage.getItem('IS_INIT_USER_BASE') === null) {
-        // await getAllUserBaseInfo()
-        const data = await apis
-          .getAllUserBaseInfo({ params: { roomId: currentRoomId.value } })
-          .send()
-        data?.forEach((item) => (userCachedList[item.uid] = item))
-        localStorage.setItem('IS_INIT_USER_BASE', 'true')
+        try {
+          const data = await apis
+            .getAllUserBaseInfo({ params: { roomId: currentRoomId.value } })
+            .send()
+          data?.forEach((item) => (userCachedList[item.uid] = item))
+          localStorage.setItem('IS_INIT_USER_BASE', 'true')
+        } catch (error) {
+          console.warn('初始化用户列表失败')
+        }
       }
     }
 
     const getGroupAtUserBaseInfo = async () => {
       if (currentRoomId.value === 1) return
-      const data = await apis.getAllUserBaseInfo({ params: { roomId: currentRoomId.value } }).send()
-      currentAtUsersList.value = data
+      // 检查是否在服务器频道页面，如果是则不调用此API
+      if (window.location.pathname.startsWith('/guild')) return
+      try {
+        const data = await apis.getAllUserBaseInfo({ params: { roomId: currentRoomId.value } }).send()
+        currentAtUsersList.value = data
+      } catch (error) {
+        console.warn('获取群成员列表失败，可能是服务器频道')
+      }
     }
 
     // 根据用户名关键字过滤用户，

@@ -91,6 +91,9 @@ public class ContactDao extends ServiceImpl<ContactMapper, Contact> {
      * 更新所有人的会话时间，没有就直接插入
      */
     public void refreshOrCreateActiveTime(Long roomId, List<Long> memberUidList, Long msgId, Date activeTime) {
+        if (CollectionUtil.isEmpty(memberUidList)) {
+            return;
+        }
         baseMapper.refreshOrCreateActiveTime(roomId, memberUidList, msgId, activeTime);
     }
 

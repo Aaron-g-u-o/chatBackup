@@ -131,8 +131,8 @@ export const useChatStore = defineStore('chat', () => {
         getMsgList()
       }
 
-      // 群组的时候去请求
-      if (currentRoomType.value === RoomTypeEnum.Group) {
+      // 群组的时候去请求（排除服务器频道页面）
+      if (currentRoomType.value === RoomTypeEnum.Group && !route.path.startsWith('/guild')) {
         groupStore.getGroupUserList(true)
         groupStore.getCountStatistic()
         cachedStore.getGroupAtUserBaseInfo()
@@ -230,8 +230,8 @@ export const useChatStore = defineStore('chat', () => {
       getMsgList()
       // 请求第一个群成员列表
       currentRoomType.value === RoomTypeEnum.Group && groupStore.getGroupUserList(true)
-      // 初始化所有用户基本信息
-      userStore.isSign && cachedStore.initAllUserBaseInfo()
+      // 初始化所有用户基本信息（排除服务器频道页面）
+      userStore.isSign && !route.path.startsWith('/guild') && cachedStore.initAllUserBaseInfo()
       // 联系人列表
       contactStore.getContactList(true)
     }
@@ -471,5 +471,6 @@ export const useChatStore = defineStore('chat', () => {
     currentSessionInfo,
     getMessage,
     removeContact,
+    getMsgList,
   }
 })

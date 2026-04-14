@@ -122,7 +122,7 @@ public class ChatServiceImpl implements ChatService {
         }
         if (room.isRoomGroup()) {
             RoomGroup roomGroup = roomGroupCache.get(request.getRoomId());
-            GroupMember member = groupMemberDao.getMember(roomGroup.getId(), uid);
+            GroupMember member = groupMemberDao.getMember(roomGroup.getRoomId(), uid);
             AssertUtil.isNotEmpty(member, "您已经被移除该群");
         }
 
@@ -191,7 +191,7 @@ public class ChatServiceImpl implements ChatService {
         }
         AssertUtil.isNotEmpty(receiveUid, "请先登录");
         Contact contact = contactDao.get(receiveUid, roomId);
-        return contact.getLastMsgId();
+        return contact != null ? contact.getLastMsgId() : null;
     }
 
     @Override
