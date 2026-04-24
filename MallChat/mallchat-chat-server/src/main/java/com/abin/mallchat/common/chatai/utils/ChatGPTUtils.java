@@ -86,20 +86,53 @@ public class ChatGPTUtils {
 
 
     public static String parseText(String body) {
-//        log.info("body >>> " + body);
+        if (StringUtils.isBlank(body)) {
+            return "闹脾气了，等会再试试吧~";
+        }
+        StringBuilder sb = new StringBuilder();
         try {
-            return Arrays.stream(body.split("data:"))
-                    .map(String::trim)
-                    .filter(x -> StringUtils.isNotBlank(x) && !"[DONE]".endsWith(x))
-                    .map(x -> Optional.ofNullable(
-                            JsonUtils.toJsonNode(x)
-                                    .withArray("choices")
-                                    .get(0)
-                                    .with("delta")
-                                    .findValue("content"))
-                            .map(JsonNode::asText)
-                            .orElse(null)
-                    ).filter(Objects::nonNull).collect(Collectors.joining());
+            String[] parts = body.split("data:");
+            for (String part : parts) {
+                String x = StringUtils.trimToEmpty(part);
+                if (StringUtils.isBlank(x)) {
+                    continue;
+                }
+                if ("[DONE]".equals(x)) {
+                    continue;
+                }
+                JsonNode root;
+                try {
+                    root = JsonUtils.toJsonNode(x);
+                } catch (Exception ex) {
+                    // not a valid json chunk, skip
+                    log.debug("skip invalid json chunk: {}", x);
+                    continue;
+                }
+                JsonNode choices = root.path("choices");
+                if (!choices.isArray() || choices.size() == 0) {
+                    log.debug("no choices array in chunk: {}", x);
+                    continue;
+                }
+                JsonNode first = choices.get(0);
+                if (first == null || first.isMissingNode()) {
+                    log.debug("empty first choice in chunk: {}", x);
+                    continue;
+                }
+                JsonNode delta = first.path("delta");
+                if (delta == null || delta.isMissingNode()) {
+                    log.debug("no delta node in first choice: {}", x);
+                    continue;
+                }
+                JsonNode content = delta.findValue("content");
+                if (content == null || content.isNull()) {
+                    continue;
+                }
+                String text = content.asText();
+                if (StringUtils.isNotBlank(text)) {
+                    sb.append(text);
+                }
+            }
+            return sb.toString();
         } catch (Exception e) {
             log.error("parseText error e:", e);
             return "闹脾气了，等会再试试吧~";

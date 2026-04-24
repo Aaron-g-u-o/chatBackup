@@ -15,14 +15,14 @@ import shakeTitle from '@/utils/shakeTitle'
 import notify from '@/utils/notification'
 
 export const pageSize = 20
-// 标识是否第一次请求
-let isFirstInit = false
 
 export const useChatStore = defineStore('chat', () => {
   const route = useRoute()
   const cachedStore = useCachedStore()
   const userStore = useUserStore()
   const globalStore = useGlobalStore()
+  // 标识是否第一次请求 - 移到 store 内部，确保每次 store 重新创建时重置
+  let isFirstInit = false
   const groupStore = useGroupStore()
   const contactStore = useContactStore()
   const sessionList = reactive<SessionItem[]>([]) // 会话列表

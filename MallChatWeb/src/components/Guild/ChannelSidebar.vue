@@ -139,37 +139,78 @@ const handleCreateChannel = async () => {
 .channel-sidebar {
   width: 240px;
   height: 100%;
-  background-color: var(--color-bg-2);
+  background: linear-gradient(180deg, var(--color-surface-1) 0%, var(--color-surface-2) 100%);
   display: flex;
   flex-direction: column;
+  border-right: 1px solid var(--color-border-secondary);
+  box-shadow: 2px 0 8px rgb(0 0 0 / 5%);
 }
 
 .guild-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--color-border);
+  padding: var(--spacing-3) var(--spacing-4);
+  border-bottom: 1px solid var(--color-border-primary);
   cursor: pointer;
+  background: linear-gradient(180deg, var(--color-surface-2) 0%, var(--color-surface-1) 100%);
+  transition: all var(--transition-fast) var(--ease-out);
   
   &:hover {
-    background-color: var(--color-bg-3);
+    background: var(--color-surface-3);
+    
+    .dropdown-icon {
+      color: var(--color-primary-400);
+    }
   }
 }
 
 .guild-name {
-  font-weight: 600;
-  font-size: 15px;
-  color: var(--color-text-1);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  letter-spacing: var(--letter-spacing-tight);
 }
 
 .dropdown-icon {
-  color: var(--color-text-2);
+  color: var(--color-text-secondary);
+  transition: color var(--transition-fast) var(--ease-out);
 }
 
 .channel-list {
   flex: 1;
   overflow-y: auto;
-  padding: 8px 0;
+  padding: var(--spacing-2) 0;
+  
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--color-surface-4);
+    border-radius: var(--radius-full);
+    
+    &:hover {
+      background-color: var(--color-surface-5);
+    }
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .channel-sidebar {
+    width: 200px;
+  }
+  
+  .guild-header {
+    padding: var(--spacing-2) var(--spacing-3);
+  }
+  
+  .guild-name {
+    font-size: var(--font-size-sm);
+  }
 }
 </style>

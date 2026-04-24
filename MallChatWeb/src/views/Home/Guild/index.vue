@@ -87,10 +87,11 @@ onMounted(() => {
 <style scoped lang="scss">
 .guild-layout {
   display: flex;
-  height: 100vh;
-  width: 100vw;
-  background-color: var(--color-bg-1);
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(135deg, var(--color-surface-0) 0%, var(--color-surface-1) 100%);
   overflow: hidden;
+  animation: fadeIn var(--transition-normal) var(--ease-out);
 }
 
 .main-content {
@@ -100,39 +101,54 @@ onMounted(() => {
   min-width: 0;
   min-height: 0;
   overflow: hidden;
+  background: var(--color-surface-1);
+  border-radius: var(--radius-2xl) 0 0 var(--radius-2xl);
+  margin: var(--spacing-2) 0 var(--spacing-2) 0;
+  box-shadow: 
+    -4px 0 16px rgb(0 0 0 / 10%),
+    inset 1px 0 0 rgb(255 255 255 / 5%);
 }
 
 .channel-header {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--color-border);
-  background-color: var(--color-bg-2);
+  padding: var(--spacing-4) var(--spacing-5);
+  border-bottom: 1px solid var(--color-border-primary);
+  background: linear-gradient(180deg, var(--color-surface-2) 0%, var(--color-surface-1) 100%);
   flex-shrink: 0;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 5%);
 }
 
 .channel-name {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-weight: 600;
-  font-size: 15px;
-  color: var(--color-text-1);
+  gap: var(--spacing-2);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  letter-spacing: var(--letter-spacing-tight);
+  
+  .el-icon {
+    color: var(--color-primary-400);
+  }
 }
 
 .channel-topic {
-  margin-left: 16px;
-  font-size: 13px;
-  color: var(--color-text-3);
+  margin-left: var(--spacing-4);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  padding-left: var(--spacing-4);
+  border-left: 1px solid var(--color-border-primary);
 }
 
 .content-area {
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  background: var(--color-surface-0);
 }
 
 .empty-channel {
@@ -141,11 +157,52 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-3);
+  color: var(--color-text-tertiary);
+  gap: var(--spacing-4);
+  
+  .el-icon {
+    color: var(--color-primary-400);
+    opacity: 0.6;
+    animation: float 3s ease-in-out infinite;
+  }
   
   p {
-    margin-top: 16px;
-    font-size: 14px;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    letter-spacing: var(--letter-spacing-wide);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .main-content {
+    border-radius: var(--radius-xl) 0 0 var(--radius-xl);
+    margin: var(--spacing-1) 0 var(--spacing-1) 0;
+  }
+  
+  .channel-header {
+    padding: var(--spacing-3) var(--spacing-4);
+  }
+  
+  .channel-topic {
+    display: none;
   }
 }
 </style>

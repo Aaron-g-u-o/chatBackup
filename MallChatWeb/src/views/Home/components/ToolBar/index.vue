@@ -3,7 +3,6 @@ import { computed, ref } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useGroupStore } from '@/stores/group'
 import { useGlobalStore } from '@/stores/global'
-import qrcode from '@/assets/qrcode.jpeg'
 import { judgeClient } from '@/utils/detectDevice'
 import { Monitor } from '@element-plus/icons-vue'
 
@@ -55,12 +54,6 @@ const menuList = []
       </router-link>
     </div>
     <div class="menu">
-      <el-tooltip effect="dark" :placement="isPc ? 'right' : 'bottom'">
-        <template #content>
-          <img class="icon-wechat-qrcode" :src="qrcode" alt="wx qrcode" />
-        </template>
-        <Icon icon="weixin" :size="28" colorful />
-      </el-tooltip>
       <a
         v-for="(item, index) in menuList"
         class="menu-item"

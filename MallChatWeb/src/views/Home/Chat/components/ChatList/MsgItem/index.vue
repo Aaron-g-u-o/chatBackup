@@ -154,9 +154,9 @@ onMounted(() => {
       // ~~5分钟内每10s中查询一次已读数~~
       watch(targetIsVisible, (visible) => {
         if (visible) {
-          eventBus.emit('onAddReadCountTask', { msgId: props.msg.message.id })
+          eventBus.emit('onAddReadCountTask', { msgId: props.msg.message.id, roomId: props.msg.message.roomId })
         } else {
-          eventBus.emit('onRemoveReadCountTask', { msgId: props.msg.message.id })
+          eventBus.emit('onRemoveReadCountTask', { msgId: props.msg.message.id, roomId: props.msg.message.roomId })
         }
       })
     }

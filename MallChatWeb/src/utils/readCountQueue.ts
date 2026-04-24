@@ -5,9 +5,7 @@ import type { Method } from 'alova'
 import type { FetchRequestInit } from 'alova/GlobalFetch'
 import type { Ref } from 'vue'
 
-const queue = new Set<number>()
-let timer: number | null = null
-let request: Method<
+type RequestType = Method<
   Ref<unknown>,
   Ref<unknown>,
   MsgReadUnReadCountType[],
@@ -15,27 +13,47 @@ let request: Method<
   FetchRequestInit,
   Response,
   Headers
-> | null = null
+>
 
-const onAddReadCountTask = ({ msgId }: { msgId: number }) => {
-  queue.add(msgId)
-}
-const onRemoveReadCountTask = ({ msgId }: { msgId: number }) => {
-  queue.delete(msgId)
-}
-const task = () => {
-  // 10s 了上个请求还未完成就中断掉
-  request?.abort()
-  if (queue.size > 0) {
-    // 开始新请求
-    request = apis.getMsgReadCount({ params: { msgIds: [...queue] } })
-    request.send().then((res) => {
-      const result = new Map<number, MsgReadUnReadCountType>()
-      res.forEach((item) => result.set(item.msgId, item))
-      eventBus.emit('onGetReadCount', result)
-      request = null
-    })
+const queueByRoom = new Map<number, Set<number>>()
+let timer: number | null = null
+const requests = new Map<number, RequestType>()
+
+const onAddReadCountTask = ({ msgId, roomId }: { msgId: number; roomId: number }) => {
+  if (!queueByRoom.has(roomId)) {
+    queueByRoom.set(roomId, new Set())
   }
+  queueByRoom.get(roomId)!.add(msgId)
+}
+
+const onRemoveReadCountTask = ({ msgId, roomId }: { msgId: number; roomId: number }) => {
+  queueByRoom.get(roomId)?.delete(msgId)
+  if (queueByRoom.get(roomId)?.size === 0) {
+    queueByRoom.delete(roomId)
+  }
+}
+
+const task = () => {
+  requests.forEach((req) => req?.abort())
+  requests.clear()
+
+  queueByRoom.forEach((msgIds, roomId) => {
+    if (msgIds.size > 0) {
+      const request = apis.getMsgReadCount({ params: { msgIds: [...msgIds] } })
+      requests.set(roomId, request)
+      request
+        .send()
+        .then((res) => {
+          const result = new Map<number, MsgReadUnReadCountType>()
+          res.forEach((item) => result.set(item.msgId, item))
+          eventBus.emit('onGetReadCount', result)
+          requests.delete(roomId)
+        })
+        .catch(() => {
+          requests.delete(roomId)
+        })
+    }
+  })
 }
 
 export const initListener = () => {
@@ -51,7 +69,7 @@ export const clearListener = () => {
 }
 
 export const clearQueue = () => {
-  queue.clear()
+  queueByRoom.clear()
   timer && clearInterval(timer)
 }
 

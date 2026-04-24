@@ -21,7 +21,7 @@ public class ChatGPTProperties {
     /**
      * 模型名称
      */
-    private String modelName = "gpt-3.5-turbo";
+    private String modelName = "glm-4-flash-250414";
     /**
      * openAI key
      */

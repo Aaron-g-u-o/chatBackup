@@ -75,6 +75,8 @@
               v-model="joinForm.inviteCode"
               placeholder="请输入服务器邀请码"
               maxlength="8"
+              clearable
+              @paste="handlePaste"
             />
           </el-form-item>
         </el-form>
@@ -192,6 +194,15 @@ onMounted(() => {
 
 const selectGuild = (guild: GuildType) => {
   guildStore.setCurrentGuild(guild)
+}
+
+const handlePaste = (event: ClipboardEvent) => {
+  event.preventDefault()
+  const pastedText = event.clipboardData?.getData('text')
+  if (pastedText) {
+    const cleanedText = pastedText.trim().substring(0, 8)
+    joinForm.value.inviteCode = cleanedText
+  }
 }
 
 const handleCreateGuild = async () => {
@@ -319,31 +330,35 @@ defineExpose({
 .guild-sidebar {
   width: 72px;
   height: 100%;
-  background-color: var(--color-bg-1);
+  background: linear-gradient(180deg, var(--color-surface-0) 0%, var(--color-surface-1) 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px 0;
+  padding: var(--spacing-3) 0;
+  border-right: 1px solid var(--color-border-secondary);
+  box-shadow: 2px 0 8px rgb(0 0 0 / 5%);
 }
 
 .guild-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--spacing-2);
   width: 100%;
-  padding: 0 12px;
+  padding: 0 var(--spacing-3);
 }
 
 .guild-item {
   position: relative;
   width: 48px;
   height: 48px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-fast) var(--ease-out);
+  animation: fadeInUp var(--transition-normal) var(--ease-out);
   
   &:hover {
-    border-radius: 16px;
+    border-radius: var(--radius-xl);
+    transform: scale(1.05);
     
     .guild-indicator {
       height: 20px;
@@ -352,23 +367,28 @@ defineExpose({
   
   &.active {
     .guild-icon {
-      border-radius: 16px;
-      background-color: var(--el-color-primary);
+      border-radius: var(--radius-xl);
+      background: linear-gradient(135deg, var(--color-brand-gradient-start), var(--color-brand-gradient-end));
+      box-shadow: var(--shadow-glow-primary);
     }
     
     .guild-indicator {
       height: 40px;
+      background: linear-gradient(180deg, var(--color-brand-gradient-start), var(--color-brand-gradient-end));
     }
   }
   
   &.add-guild {
     .guild-icon {
-      background-color: var(--color-bg-3);
-      color: var(--el-color-success);
+      background-color: var(--color-surface-2);
+      color: var(--color-success-400);
+      border: 2px dashed var(--color-success-500);
       
       &:hover {
-        background-color: var(--el-color-success);
-        color: white;
+        background-color: var(--color-success-500);
+        color: var(--color-neutral-0);
+        border-color: var(--color-success-500);
+        box-shadow: var(--shadow-glow-success);
       }
     }
   }
@@ -377,13 +397,14 @@ defineExpose({
 .guild-icon {
   width: 100%;
   height: 100%;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--color-bg-3);
+  background-color: var(--color-surface-2);
   overflow: hidden;
-  transition: all 0.2s;
+  transition: all var(--transition-fast) var(--ease-out);
+  border: 2px solid transparent;
   
   img {
     width: 100%;
@@ -393,9 +414,9 @@ defineExpose({
 }
 
 .guild-name-initial {
-  font-size: 18px;
-  font-weight: 600;
-  color: white;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
 }
 
 .guild-indicator {
@@ -405,15 +426,15 @@ defineExpose({
   transform: translateY(-50%);
   width: 4px;
   height: 8px;
-  background-color: white;
-  border-radius: 0 4px 4px 0;
-  transition: height 0.2s;
+  background-color: var(--color-text-primary);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  transition: height var(--transition-fast) var(--ease-out);
 }
 
 .add-options {
   display: flex;
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-5);
 }
 
 .option-card {
@@ -421,37 +442,40 @@ defineExpose({
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
-  border: 2px solid var(--color-border);
-  border-radius: 12px;
+  padding: var(--spacing-5);
+  border: 2px solid var(--color-border-primary);
+  border-radius: var(--radius-xl);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-fast) var(--ease-out);
   
   &:hover {
-    border-color: var(--el-color-primary-light-5);
+    border-color: var(--color-primary-400);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
   }
   
   &.active {
-    border-color: var(--el-color-primary);
-    background-color: var(--el-color-primary-light-9);
+    border-color: var(--color-primary-500);
+    background: linear-gradient(135deg, rgb(3 169 244 / 10%), rgb(3 169 244 / 5%));
+    box-shadow: var(--shadow-glow-primary);
   }
   
   .option-title {
-    margin-top: 12px;
-    font-weight: 600;
-    color: var(--color-text-1);
+    margin-top: var(--spacing-3);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
   }
   
   .option-desc {
-    margin-top: 4px;
-    font-size: 12px;
-    color: var(--color-text-3);
+    margin-top: var(--spacing-1);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
   }
 }
 
 .create-form,
 .join-form {
-  margin-top: 16px;
+  margin-top: var(--spacing-4);
 }
 
 .invite-content {
@@ -459,35 +483,42 @@ defineExpose({
 }
 
 .invite-tip {
-  color: var(--color-text-2);
-  margin-bottom: 16px;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-4);
 }
 
 .invite-code-box {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 16px;
-  background-color: var(--color-bg-2);
-  border-radius: 8px;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4);
+  background: linear-gradient(135deg, var(--color-surface-2), var(--color-surface-3));
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-primary);
 }
 
 .invite-code {
-  font-size: 24px;
-  font-weight: bold;
-  letter-spacing: 4px;
-  color: var(--el-color-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-wider);
+  background: linear-gradient(135deg, var(--color-brand-gradient-start), var(--color-brand-gradient-end));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .explore-guild {
   .guild-icon {
-    background-color: var(--color-bg-3);
-    color: var(--el-color-primary);
+    background-color: var(--color-surface-2);
+    color: var(--color-primary-400);
+    border: 2px solid var(--color-primary-500);
     
     &:hover {
-      background-color: var(--el-color-primary);
-      color: white;
+      background: linear-gradient(135deg, var(--color-brand-gradient-start), var(--color-brand-gradient-end));
+      color: var(--color-neutral-0);
+      border-color: transparent;
+      box-shadow: var(--shadow-glow-primary);
     }
   }
 }
@@ -502,40 +533,44 @@ defineExpose({
   align-items: center;
   justify-content: center;
   height: 200px;
-  color: var(--color-text-3);
+  color: var(--color-text-tertiary);
 }
 
 .guild-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: var(--spacing-3);
 }
 
 .guild-card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background-color: var(--color-bg-2);
-  border-radius: 8px;
-  transition: all 0.2s;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3);
+  background: var(--color-surface-2);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-primary);
+  transition: all var(--transition-fast) var(--ease-out);
   
   &:hover {
-    background-color: var(--color-bg-3);
+    background: var(--color-surface-3);
+    border-color: var(--color-primary-500);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
   }
 }
 
 .guild-card-icon {
   width: 48px;
   height: 48px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--el-color-primary);
-  color: white;
-  font-weight: bold;
-  font-size: 18px;
+  background: linear-gradient(135deg, var(--color-brand-gradient-start), var(--color-brand-gradient-end));
+  color: var(--color-neutral-0);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-lg);
   overflow: hidden;
   flex-shrink: 0;
   
@@ -552,25 +587,36 @@ defineExpose({
 }
 
 .guild-card-name {
-  font-weight: 600;
-  color: var(--color-text-1);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .guild-card-desc {
-  font-size: 12px;
-  color: var(--color-text-3);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin-top: 2px;
+  margin-top: var(--spacing-1);
 }
 
 .guild-card-meta {
-  font-size: 12px;
-  color: var(--color-text-2);
-  margin-top: 4px;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-top: var(--spacing-1);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

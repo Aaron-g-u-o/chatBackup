@@ -7,27 +7,269 @@
   font-weight: normal;
 }
 
-/* width */
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
+  height: 6px;
 }
 
-/* Track */
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 
-/* Handle */
 ::-webkit-scrollbar-thumb {
-  background-color: var(--font-gray);
-  border-radius: 2px;
+  background-color: var(--color-surface-4);
+  border-radius: var(--radius-full);
+  transition: background-color var(--transition-fast) var(--ease-out);
 }
 
-/* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--hover-bg-1);
+  background-color: var(--color-surface-5);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 [hidden] {
   display: none !important;
+}
+
+.scroll-hover::-webkit-scrollbar-thumb {
+  background-color: transparent;
+}
+
+.scroll-hover:hover::-webkit-scrollbar-thumb {
+  background-color: var(--color-surface-4);
+}
+
+.scroll-hover:hover::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-surface-5);
+}
+
+:root {
+  --el-color-primary: var(--color-primary-500);
+  --el-color-primary-light-3: var(--color-primary-300);
+  --el-color-primary-light-5: var(--color-primary-200);
+  --el-color-primary-light-7: var(--color-primary-100);
+  --el-color-primary-light-8: var(--color-primary-50);
+  --el-color-primary-light-9: var(--color-primary-50);
+  --el-color-primary-dark-2: var(--color-primary-700);
+}
+
+.el-dialog {
+  border-radius: var(--radius-2xl) !important;
+  background-color: var(--color-surface-1) !important;
+  border: 1px solid var(--color-border-primary) !important;
+  box-shadow: var(--shadow-2xl) !important;
+}
+
+.el-dialog__header {
+  padding: var(--spacing-6) var(--spacing-6) var(--spacing-4) !important;
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.el-dialog__title {
+  font-family: var(--font-family-display) !important;
+  font-weight: var(--font-weight-semibold) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.el-dialog__body {
+  padding: var(--spacing-6) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.el-dialog__headerbtn {
+  top: var(--spacing-4) !important;
+  right: var(--spacing-4) !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: var(--radius-lg) !important;
+  transition: all var(--transition-fast) var(--ease-out) !important;
+}
+
+.el-dialog__headerbtn:hover {
+  background-color: var(--color-surface-3) !important;
+}
+
+.el-dialog__headerbtn .el-dialog__close {
+  color: var(--color-text-secondary) !important;
+  font-size: 18px !important;
+}
+
+.el-dialog__headerbtn:hover .el-dialog__close {
+  color: var(--color-text-primary) !important;
+}
+
+.el-message-box {
+  border-radius: var(--radius-2xl) !important;
+  background-color: var(--color-surface-1) !important;
+  border: 1px solid var(--color-border-primary) !important;
+  box-shadow: var(--shadow-2xl) !important;
+}
+
+.el-message-box__title {
+  font-family: var(--font-family-display) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.el-message-box__content {
+  color: var(--color-text-secondary) !important;
+}
+
+.el-button {
+  font-family: var(--font-family-body) !important;
+  font-weight: var(--font-weight-medium) !important;
+  border-radius: var(--radius-lg) !important;
+  transition: all var(--transition-fast) var(--ease-out) !important;
+}
+
+.el-button--primary {
+  background: linear-gradient(135deg, var(--color-brand-gradient-start), var(--color-brand-gradient-end)) !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgb(3 169 244 / 30%) !important;
+}
+
+.el-button--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgb(3 169 244 / 40%) !important;
+}
+
+.el-button--primary:active {
+  transform: translateY(0);
+}
+
+.el-input__wrapper {
+  background-color: var(--color-surface-2) !important;
+  border: 1px solid var(--color-border-primary) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: none !important;
+  transition: all var(--transition-fast) var(--ease-out) !important;
+}
+
+.el-input__wrapper:hover {
+  border-color: var(--color-surface-4) !important;
+}
+
+.el-input__wrapper.is-focus {
+  border-color: var(--color-primary-500) !important;
+  box-shadow: 0 0 0 3px rgb(3 169 244 / 10%) !important;
+}
+
+.el-input__inner {
+  color: var(--color-text-primary) !important;
+}
+
+.el-input__inner::placeholder {
+  color: var(--color-text-placeholder) !important;
+}
+
+.el-avatar {
+  border: 2px solid var(--color-border-secondary) !important;
+  transition: all var(--transition-fast) var(--ease-out) !important;
+}
+
+.el-avatar:hover {
+  border-color: var(--color-primary-500) !important;
+  box-shadow: var(--shadow-glow-primary) !important;
+}
+
+.el-badge__content {
+  font-family: var(--font-family-body) !important;
+  font-weight: var(--font-weight-semibold) !important;
+  background: linear-gradient(135deg, var(--color-accent-gradient-start), var(--color-accent-gradient-end)) !important;
+  border: none !important;
+}
+
+.el-tooltip__popper {
+  border-radius: var(--radius-lg) !important;
+  background-color: var(--color-surface-3) !important;
+  border: 1px solid var(--color-border-primary) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.el-popover.el-popper {
+  border-radius: var(--radius-xl) !important;
+  background-color: var(--color-surface-2) !important;
+  border: 1px solid var(--color-border-primary) !important;
+  box-shadow: var(--shadow-xl) !important;
+}
+
+.el-loading-mask {
+  background-color: rgb(13 17 23 / 80%) !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+.el-loading-spinner .circular {
+  stroke: var(--color-primary-500) !important;
+}
+
+.el-loading-spinner .el-loading-text {
+  color: var(--color-text-secondary) !important;
+  font-family: var(--font-family-body) !important;
+}
+
+.el-image-viewer__wrapper {
+  background-color: rgb(0 0 0 / 90%) !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+.el-image-viewer__close {
+  color: var(--color-text-primary) !important;
+  background-color: var(--color-surface-2) !important;
+  border-radius: var(--radius-full) !important;
+  transition: all var(--transition-fast) var(--ease-out) !important;
+}
+
+.el-image-viewer__close:hover {
+  background-color: var(--color-surface-3) !important;
+  transform: scale(1.1);
+}
+
+.el-dropdown-menu {
+  background-color: var(--color-surface-2) !important;
+  border: 1px solid var(--color-border-primary) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-xl) !important;
+  padding: var(--spacing-2) !important;
+}
+
+.el-dropdown-menu__item {
+  color: var(--color-text-primary) !important;
+  border-radius: var(--radius-md) !important;
+  transition: all var(--transition-fast) var(--ease-out) !important;
+}
+
+.el-dropdown-menu__item:hover {
+  background-color: var(--color-surface-3) !important;
+  color: var(--color-primary-400) !important;
+}
+
+.el-tabs__item {
+  color: var(--color-text-secondary) !important;
+  font-family: var(--font-family-body) !important;
+  transition: all var(--transition-fast) var(--ease-out) !important;
+}
+
+.el-tabs__item.is-active {
+  color: var(--color-primary-500) !important;
+}
+
+.el-tabs__active-bar {
+  background-color: var(--color-primary-500) !important;
+}
+
+.el-switch.is-checked .el-switch__core {
+  background: linear-gradient(135deg, var(--color-brand-gradient-start), var(--color-brand-gradient-end)) !important;
+  border-color: transparent !important;
+}
+
+.el-checkbox__input.is-checked .el-checkbox__inner {
+  background-color: var(--color-primary-500) !important;
+  border-color: var(--color-primary-500) !important;
+}
+
+.el-radio__input.is-checked .el-radio__inner {
+  background-color: var(--color-primary-500) !important;
+  border-color: var(--color-primary-500) !important;
 }
