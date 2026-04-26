@@ -11,9 +11,13 @@ import java.util.List;
 @Setter
 public class ChatGPTContext implements Serializable {
 
+    private Long sessionId;
+
     private Long roomId;
 
     private Long uid;
+
+    private String model;
 
     private List<ChatGPTMsg> msg = new ArrayList<>();
 

@@ -52,8 +52,34 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
     }
 
     private void userOffLine(ChannelHandlerContext ctx) {
+        Long uid = getUidFromChannel(ctx);
         this.webSocketService.removed(ctx.channel());
+        
+        if (uid != null) {
+            try {
+                com.abin.mallchat.common.voice.service.VoiceRoomService voiceRoomService = 
+                    SpringUtil.getBean(com.abin.mallchat.common.voice.service.VoiceRoomService.class);
+                voiceRoomService.leaveAllRooms(uid);
+            } catch (Exception e) {
+                log.warn("清理用户语音房间状态失败, uid={}", uid, e);
+            }
+            
+            try {
+                com.abin.mallchat.common.guild.service.GuildService guildService = 
+                    SpringUtil.getBean(com.abin.mallchat.common.guild.service.GuildService.class);
+                guildService.cleanupVoiceChannelsOnDisconnect(uid);
+            } catch (Exception e) {
+                log.warn("清理用户语音频道状态失败, uid={}", uid, e);
+            }
+        }
+        
         ctx.channel().close();
+    }
+    
+    private Long getUidFromChannel(ChannelHandlerContext ctx) {
+        com.abin.mallchat.common.user.domain.dto.WSChannelExtraDTO extra = 
+            com.abin.mallchat.common.user.service.impl.WebSocketServiceImpl.getOnlineMap().get(ctx.channel());
+        return extra != null ? extra.getUid() : null;
     }
 
     /**

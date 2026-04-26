@@ -102,7 +102,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { Headset, Mute, Microphone, Refresh, SwitchButton } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import type { ChannelType, ChannelMemberType } from '@/services/guildTypes'
@@ -312,6 +312,11 @@ const handleVoiceRoomUpdate = (update: VoiceRoomUpdateType) => {
     if (index !== -1) {
       const leavingMember = members.value[index]
       members.value.splice(index, 1)
+      
+      voiceChat.closePeerConnection(update.member.uid)
+      remoteStreams.value.delete(update.member.uid)
+      audioRefs.value.delete(update.member.uid)
+      
       ElMessage.info(`${leavingMember.name} 离开了语音频道`)
     }
   } else if (update.action === 'status' && update.member) {
@@ -355,12 +360,15 @@ const joinChannel = async () => {
       (uid, stream) => {
         console.log('收到远程音频流:', uid)
         remoteStreams.value.set(uid, stream)
-        setTimeout(() => {
+        nextTick(() => {
           const audioEl = audioRefs.value.get(uid)
           if (audioEl) {
             audioEl.srcObject = stream
+            audioEl.play().catch((e: Error) => {
+              console.warn(`自动播放被阻止，uid=${uid}:`, e.message)
+            })
           }
-        }, 0)
+        })
       },
       (uid) => {
         console.log('远程音频流断开:', uid)

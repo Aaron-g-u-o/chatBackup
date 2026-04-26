@@ -5,6 +5,7 @@ import { useGroupStore } from '@/stores/group'
 import { useGlobalStore } from '@/stores/global'
 import { judgeClient } from '@/utils/detectDevice'
 import { Monitor } from '@element-plus/icons-vue'
+import { Compass } from '@element-plus/icons-vue'
 
 const client = judgeClient()
 const visible = ref(false)
@@ -50,6 +51,12 @@ const menuList = []
       <router-link v-login-show exactActiveClass="tool-icon-active" to="/guild">
         <el-tooltip content="服务器" placement="right">
           <el-icon class="tool-icon" :size="28"><Monitor /></el-icon>
+        </el-tooltip>
+      </router-link>
+      <!-- 发现社区 -->
+      <router-link v-login-show exactActiveClass="tool-icon-active" to="/discovery">
+        <el-tooltip content="发现社区" placement="right">
+          <el-icon class="tool-icon" :size="28"><Compass /></el-icon>
         </el-tooltip>
       </router-link>
     </div>

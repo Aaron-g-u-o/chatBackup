@@ -32,5 +32,7 @@ public interface GuildService {
     
     void leaveVoiceChannel(Long uid, Long channelId);
     
+    void cleanupVoiceChannelsOnDisconnect(Long uid);
+    
     List<ChannelResp> getVoiceChannelMembers(Long channelId);
 }

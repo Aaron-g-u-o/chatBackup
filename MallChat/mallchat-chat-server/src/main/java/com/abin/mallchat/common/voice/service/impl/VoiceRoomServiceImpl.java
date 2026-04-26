@@ -12,6 +12,7 @@ import com.abin.mallchat.common.voice.domain.vo.request.VoiceRoomReq;
 import com.abin.mallchat.common.voice.domain.vo.response.VoiceMemberResp;
 import com.abin.mallchat.common.voice.domain.vo.response.VoiceRoomResp;
 import com.abin.mallchat.common.voice.domain.vo.ws.WSVoiceRoomUpdate;
+import com.abin.mallchat.common.voice.handler.VoiceSignalHandler;
 import com.abin.mallchat.common.voice.service.VoiceRoomService;
 import com.abin.mallchat.common.voice.service.WebRTCSignalService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -29,22 +30,22 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class VoiceRoomServiceImpl implements VoiceRoomService {
-    
+
     @Autowired
     private VoiceRoomDao voiceRoomDao;
-    
+
     @Autowired
     private VoiceRoomMemberDao voiceRoomMemberDao;
-    
+
     @Autowired
     private UserDao userDao;
-    
+
     @Autowired
     private WebRTCSignalService webRTCSignalService;
-    
+
     @Autowired
     private ApplicationEventPublisher eventPublisher;
-    
+
     @Override
     @Transactional
     public VoiceRoomResp createRoom(Long uid, VoiceRoomReq req) {
@@ -56,10 +57,10 @@ public class VoiceRoomServiceImpl implements VoiceRoomService {
         voiceRoom.setCurrentUserCount(0);
         voiceRoom.setStatus(VoiceRoomStatusEnum.ACTIVE.getStatus());
         voiceRoomDao.save(voiceRoom);
-        
+
         return buildVoiceRoomResp(voiceRoom, new ArrayList<>());
     }
-    
+
     @Override
     @Transactional
     public VoiceRoomResp joinRoom(Long uid, Long voiceRoomId) {
@@ -67,16 +68,16 @@ public class VoiceRoomServiceImpl implements VoiceRoomService {
         if (voiceRoom == null || !VoiceRoomStatusEnum.ACTIVE.getStatus().equals(voiceRoom.getStatus())) {
             throw new RuntimeException("语音房间不存在或已关闭");
         }
-        
+
         VoiceRoomMember existingMember = voiceRoomMemberDao.getActiveMember(voiceRoomId, uid);
         if (existingMember != null) {
             return getRoomDetail(voiceRoomId);
         }
-        
+
         if (voiceRoom.getCurrentUserCount() >= voiceRoom.getMaxUsers()) {
             throw new RuntimeException("语音房间已满");
         }
-        
+
         VoiceRoomMember member = new VoiceRoomMember();
         member.setVoiceRoomId(voiceRoomId);
         member.setUid(uid);
@@ -84,21 +85,25 @@ public class VoiceRoomServiceImpl implements VoiceRoomService {
         member.setDeafened(0);
         member.setSpeaking(0);
         voiceRoomMemberDao.save(member);
-        
+
         voiceRoomDao.incrementUserCount(voiceRoomId);
-        
+
         List<VoiceRoomMember> members = voiceRoomMemberDao.getActiveMembers(voiceRoomId);
         VoiceRoomResp roomResp = buildVoiceRoomResp(voiceRoom, members);
-        
+
         WSVoiceRoomUpdate update = new WSVoiceRoomUpdate();
         update.setVoiceRoomId(voiceRoomId);
         update.setAction("join");
         update.setMember(buildMemberResp(uid));
         webRTCSignalService.broadcastToRoom(voiceRoomId, uid, update);
-        
+
+        VoiceSignalHandler.bindVoiceRoom(uid, voiceRoomId);
+
+        log.info("用户 {} 加入语音房间 {}", uid, voiceRoomId);
+
         return roomResp;
     }
-    
+
     @Override
     @Transactional
     public void leaveRoom(Long uid, Long voiceRoomId) {
@@ -106,17 +111,49 @@ public class VoiceRoomServiceImpl implements VoiceRoomService {
         if (member == null) {
             return;
         }
-        
+
         voiceRoomMemberDao.leaveRoom(voiceRoomId, uid);
         voiceRoomDao.decrementUserCount(voiceRoomId);
-        
+
         WSVoiceRoomUpdate update = new WSVoiceRoomUpdate();
         update.setVoiceRoomId(voiceRoomId);
         update.setAction("leave");
         update.setMember(buildMemberResp(uid));
         webRTCSignalService.broadcastToRoom(voiceRoomId, null, update);
+
+        VoiceSignalHandler.unbindVoiceRoom(uid);
+
+        log.info("用户 {} 离开语音房间 {}", uid, voiceRoomId);
     }
-    
+
+    @Override
+    @Transactional
+    public void leaveAllRooms(Long uid) {
+        List<VoiceRoomMember> activeMemberships = voiceRoomMemberDao.lambdaQuery()
+                .eq(VoiceRoomMember::getUid, uid)
+                .isNull(VoiceRoomMember::getLeaveTime)
+                .list();
+
+        if (CollUtil.isEmpty(activeMemberships)) {
+            return;
+        }
+
+        for (VoiceRoomMember membership : activeMemberships) {
+            voiceRoomMemberDao.leaveRoom(membership.getVoiceRoomId(), uid);
+            voiceRoomDao.decrementUserCount(membership.getVoiceRoomId());
+
+            WSVoiceRoomUpdate update = new WSVoiceRoomUpdate();
+            update.setVoiceRoomId(membership.getVoiceRoomId());
+            update.setAction("leave");
+            update.setMember(buildMemberResp(uid));
+            webRTCSignalService.broadcastToRoom(membership.getVoiceRoomId(), null, update);
+        }
+
+        VoiceSignalHandler.unbindVoiceRoom(uid);
+
+        log.info("用户 {} 断开连接，已清理 {} 个语音房间", uid, activeMemberships.size());
+    }
+
     @Override
     public List<VoiceRoomResp> getActiveRooms() {
         List<VoiceRoom> rooms = voiceRoomDao.getActiveRooms();
@@ -127,7 +164,7 @@ public class VoiceRoomServiceImpl implements VoiceRoomService {
                 })
                 .collect(Collectors.toList());
     }
-    
+
     @Override
     public VoiceRoomResp getRoomDetail(Long voiceRoomId) {
         VoiceRoom voiceRoom = voiceRoomDao.getById(voiceRoomId);
@@ -137,14 +174,14 @@ public class VoiceRoomServiceImpl implements VoiceRoomService {
         List<VoiceRoomMember> members = voiceRoomMemberDao.getActiveMembers(voiceRoomId);
         return buildVoiceRoomResp(voiceRoom, members);
     }
-    
+
     @Override
     public void updateMemberStatus(Long uid, Long voiceRoomId, Boolean muted, Boolean deafened, Boolean speaking) {
         VoiceRoomMember member = voiceRoomMemberDao.getActiveMember(voiceRoomId, uid);
         if (member == null) {
             return;
         }
-        
+
         if (muted != null) {
             member.setMuted(muted ? 1 : 0);
         }
@@ -155,14 +192,14 @@ public class VoiceRoomServiceImpl implements VoiceRoomService {
             member.setSpeaking(speaking ? 1 : 0);
         }
         voiceRoomMemberDao.updateById(member);
-        
+
         WSVoiceRoomUpdate update = new WSVoiceRoomUpdate();
         update.setVoiceRoomId(voiceRoomId);
         update.setAction("status");
         update.setMember(buildMemberResp(uid));
         webRTCSignalService.broadcastToRoom(voiceRoomId, uid, update);
     }
-    
+
     private VoiceRoomResp buildVoiceRoomResp(VoiceRoom voiceRoom, List<VoiceRoomMember> members) {
         VoiceRoomResp resp = new VoiceRoomResp();
         resp.setId(voiceRoom.getId());
@@ -171,7 +208,7 @@ public class VoiceRoomServiceImpl implements VoiceRoomService {
         resp.setCreatorUid(voiceRoom.getCreatorUid());
         resp.setMaxUsers(voiceRoom.getMaxUsers());
         resp.setCurrentUserCount(voiceRoom.getCurrentUserCount());
-        
+
         if (CollUtil.isNotEmpty(members)) {
             List<Long> uids = members.stream()
                     .map(VoiceRoomMember::getUid)
@@ -179,7 +216,7 @@ public class VoiceRoomServiceImpl implements VoiceRoomService {
             List<User> users = userDao.listByIds(uids);
             Map<Long, User> userMap = users.stream()
                     .collect(Collectors.toMap(User::getId, u -> u));
-            
+
             List<VoiceMemberResp> memberResps = members.stream()
                     .map(m -> {
                         VoiceMemberResp memberResp = new VoiceMemberResp();
@@ -199,10 +236,10 @@ public class VoiceRoomServiceImpl implements VoiceRoomService {
         } else {
             resp.setMembers(new ArrayList<>());
         }
-        
+
         return resp;
     }
-    
+
     private VoiceMemberResp buildMemberResp(Long uid) {
         User user = userDao.getById(uid);
         VoiceMemberResp resp = new VoiceMemberResp();

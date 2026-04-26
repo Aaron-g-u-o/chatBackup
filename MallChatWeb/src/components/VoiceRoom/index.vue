@@ -96,7 +96,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed, nextTick } from 'vue'
 import { Refresh, Mute, Headset, Microphone, Warning } from '@element-plus/icons-vue'
 import VoiceRoomList from './VoiceRoomList.vue'
 import VoiceControl from './VoiceControl.vue'
@@ -229,12 +229,15 @@ const handleJoin = async (room: VoiceRoomType) => {
     voiceChat.setCallbacks(
       (uid, stream) => {
         remoteStreams.value.set(uid, stream)
-        setTimeout(() => {
+        nextTick(() => {
           const audioEl = audioRefs.value.get(uid)
           if (audioEl) {
             audioEl.srcObject = stream
+            audioEl.play().catch((e: Error) => {
+              console.warn(`自动播放被阻止，uid=${uid}:`, e.message)
+            })
           }
-        }, 0)
+        })
       },
       (uid) => {
         remoteStreams.value.delete(uid)
@@ -334,6 +337,10 @@ const handleVoiceRoomUpdate = (update: VoiceRoomUpdateType) => {
       currentRoom.value.members.splice(index, 1)
       currentRoom.value.currentUserCount--
       voiceMemberStore.removeMember(update.member.uid)
+      
+      voiceChat.closePeerConnection(update.member.uid)
+      remoteStreams.value.delete(update.member.uid)
+      audioRefs.value.delete(update.member.uid)
     }
   } else if (update.action === 'status' && update.member) {
     const member = currentRoom.value.members.find(m => m.uid === update.member!.uid)

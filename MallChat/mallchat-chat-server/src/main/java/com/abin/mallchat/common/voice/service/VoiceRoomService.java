@@ -12,6 +12,8 @@ public interface VoiceRoomService {
     
     void leaveRoom(Long uid, Long voiceRoomId);
     
+    void leaveAllRooms(Long uid);
+    
     List<VoiceRoomResp> getActiveRooms();
     
     VoiceRoomResp getRoomDetail(Long voiceRoomId);

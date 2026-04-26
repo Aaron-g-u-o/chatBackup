@@ -4,40 +4,29 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-/**
- * ChatGLM2 配置文件
- *
- * @author zhaoyuhang
- * @date 2023/06/30
- */
 @Data
 @Component
 @ConfigurationProperties(prefix = "chatai.chatglm2")
 public class ChatGLM2Properties {
 
-    /**
-     * 使用
-     */
     private boolean use = false;
 
-    /**
-     * url
-     */
-    private String url;
+    private String apiKey;
 
-    /**
-     * 机器人 id
-     */
+    private String url = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
+
+    private String model = "glm-4-flash";
+
     private Long AIUserId;
 
-    /**
-     * 每个用户每?分钟可以请求一次
-     */
-    private Long minute = 3L;
+    private Long minute = 1L;
 
-    /**
-     * 超时
-     */
-    private Integer timeout = 60*1000;
+    private Integer timeout = 60000;
+
+    private Integer maxTokens = 2048;
+
+    private Double temperature = 0.95;
+
+    private Integer limit = 100;
 
 }

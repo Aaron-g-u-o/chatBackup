@@ -81,6 +81,10 @@ public class GuildServiceImpl implements GuildService {
         guild.setIsPublic(req.getIsPublic() != null ? req.getIsPublic() : 1);
         guild.setInviteCode(generateInviteCode());
         guild.setStatus(1);
+        guild.setCategory(req.getCategory() != null ? req.getCategory() : "其他");
+        guild.setTags(req.getTags());
+        guild.setLanguage(req.getLanguage() != null ? req.getLanguage() : "zh-CN");
+        guild.setActivityLevel(1);
         guildDao.save(guild);
         
         GuildMember member = new GuildMember();
@@ -434,6 +438,26 @@ public class GuildServiceImpl implements GuildService {
         guildVoiceBroadcastService.broadcastVoiceChannelUpdate(channelId, "leave", memberResp);
         
         log.info("用户 {} 离开语音频道 {}", uid, channelId);
+    }
+    
+    @Override
+    @Transactional
+    public void cleanupVoiceChannelsOnDisconnect(Long uid) {
+        List<ChannelMember> activeVoiceMemberships = channelMemberDao.lambdaQuery()
+                .eq(ChannelMember::getUid, uid)
+                .list();
+        
+        if (CollUtil.isEmpty(activeVoiceMemberships)) {
+            return;
+        }
+        
+        for (ChannelMember membership : activeVoiceMemberships) {
+            ChannelMemberResp memberResp = buildChannelMemberResp(membership);
+            channelMemberDao.removeMember(membership.getChannelId(), uid);
+            guildVoiceBroadcastService.broadcastVoiceChannelUpdate(membership.getChannelId(), "leave", memberResp);
+        }
+        
+        log.info("用户 {} 断开连接，已清理 {} 个语音频道", uid, activeVoiceMemberships.size());
     }
     
     @Override

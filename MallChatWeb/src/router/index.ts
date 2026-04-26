@@ -7,6 +7,8 @@ const HomeContactsView = () =>
   import(/* webpackChunkName: "Home" */ '@/views/Home/Contacts/index.vue')
 const GuildView = () =>
   import(/* webpackChunkName: "Guild" */ '@/views/Home/Guild/index.vue')
+const DiscoveryView = () =>
+  import(/* webpackChunkName: "Discovery" */ '@/views/Home/Discovery/index.vue')
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -30,6 +32,11 @@ const router = createRouter({
           path: 'guild',
           name: 'guild',
           component: GuildView,
+        },
+        {
+          path: 'discovery',
+          name: 'discovery',
+          component: DiscoveryView,
         },
       ],
     },

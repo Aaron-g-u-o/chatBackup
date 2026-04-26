@@ -1,12 +1,14 @@
 package com.abin.mallchat.common.guild.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
-@TableName("guild")
+@TableName(value = "guild", autoResultMap = true)
 public class Guild {
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -16,6 +18,15 @@ public class Guild {
     private String icon;
     
     private String description;
+    
+    private String category;
+    
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private List<String> tags;
+    
+    private String language;
+    
+    private Integer activityLevel;
     
     private Long ownerUid;
     

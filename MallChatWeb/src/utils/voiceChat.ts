@@ -10,11 +10,13 @@ const ICE_SERVERS = [
 
 export class VoiceChat {
   private peerConnections: Map<number, RTCPeerConnection> = new Map()
+  private pendingCandidates: Map<number, RTCIceCandidateInit[]> = new Map()
   private localStream: MediaStream | null = null
   private voiceRoomId: number | null = null
   private uid: number | null = null
   private onRemoteStreamCallback: ((uid: number, stream: MediaStream) => void) | null = null
   private onRemoteStreamRemovedCallback: ((uid: number) => void) | null = null
+  private onConnectionStateChangeCallback: ((uid: number, state: RTCPeerConnectionState) => void) | null = null
   private muted: boolean = false
   private deafened: boolean = false
 
@@ -33,9 +35,11 @@ export class VoiceChat {
   setCallbacks(
     onRemoteStream: (uid: number, stream: MediaStream) => void,
     onRemoteStreamRemoved: (uid: number) => void,
+    onConnectionStateChange?: (uid: number, state: RTCPeerConnectionState) => void,
   ) {
     this.onRemoteStreamCallback = onRemoteStream
     this.onRemoteStreamRemovedCallback = onRemoteStreamRemoved
+    this.onConnectionStateChangeCallback = onConnectionStateChange || null
   }
 
   joinRoom(voiceRoomId: number, uid: number) {
@@ -49,6 +53,7 @@ export class VoiceChat {
       this.onRemoteStreamRemovedCallback?.(uid)
     })
     this.peerConnections.clear()
+    this.pendingCandidates.clear()
     
     if (this.localStream) {
       this.localStream.getTracks().forEach((track) => track.stop())
@@ -57,6 +62,18 @@ export class VoiceChat {
     
     this.voiceRoomId = null
     this.uid = null
+    this.muted = false
+    this.deafened = false
+  }
+
+  closePeerConnection(targetUid: number) {
+    const pc = this.peerConnections.get(targetUid)
+    if (pc) {
+      pc.close()
+      this.peerConnections.delete(targetUid)
+      this.pendingCandidates.delete(targetUid)
+      this.onRemoteStreamRemovedCallback?.(targetUid)
+    }
   }
 
   async createOffer(targetUid: number) {
@@ -102,6 +119,8 @@ export class VoiceChat {
       sdp: signal.sdp,
     })
     
+    await this.flushPendingCandidates(signal.fromUid, pc)
+    
     const answer = await pc.createAnswer()
     await pc.setLocalDescription(answer)
     
@@ -122,6 +141,8 @@ export class VoiceChat {
         type: 'answer',
         sdp: signal.sdp,
       })
+      
+      await this.flushPendingCandidates(signal.fromUid, pc)
     }
   }
 
@@ -129,9 +150,34 @@ export class VoiceChat {
     if (!signal.fromUid || !signal.candidate) return
     
     const pc = this.peerConnections.get(signal.fromUid)
-    if (pc) {
-      await pc.addIceCandidate(JSON.parse(signal.candidate))
+    if (pc && pc.remoteDescription) {
+      try {
+        await pc.addIceCandidate(JSON.parse(signal.candidate))
+      } catch (e) {
+        console.warn('添加ICE Candidate失败:', e)
+      }
+    } else {
+      let candidates = this.pendingCandidates.get(signal.fromUid)
+      if (!candidates) {
+        candidates = []
+        this.pendingCandidates.set(signal.fromUid, candidates)
+      }
+      candidates.push(JSON.parse(signal.candidate))
     }
+  }
+
+  private async flushPendingCandidates(uid: number, pc: RTCPeerConnection) {
+    const candidates = this.pendingCandidates.get(uid)
+    if (!candidates || candidates.length === 0) return
+    
+    for (const candidate of candidates) {
+      try {
+        await pc.addIceCandidate(candidate)
+      } catch (e) {
+        console.warn('刷新缓冲ICE Candidate失败:', e)
+      }
+    }
+    this.pendingCandidates.delete(uid)
   }
 
   private async createPeerConnection(targetUid: number): Promise<RTCPeerConnection> {
@@ -153,13 +199,29 @@ export class VoiceChat {
     }
 
     pc.ontrack = (event) => {
-      if (event.streams[0]) {
+      if (event.streams && event.streams[0]) {
         this.onRemoteStreamCallback?.(targetUid, event.streams[0])
       }
     }
 
     pc.onconnectionstatechange = () => {
-      if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+      this.onConnectionStateChangeCallback?.(targetUid, pc.connectionState)
+      
+      if (pc.connectionState === 'failed') {
+        console.warn(`PeerConnection与用户${targetUid}连接失败，尝试重建`)
+        pc.close()
+        this.peerConnections.delete(targetUid)
+        this.onRemoteStreamRemovedCallback?.(targetUid)
+      } else if (pc.connectionState === 'disconnected') {
+        console.warn(`PeerConnection与用户${targetUid}连接断开`)
+      } else if (pc.connectionState === 'connected') {
+        console.log(`PeerConnection与用户${targetUid}已建立`)
+      }
+    }
+
+    pc.oniceconnectionstatechange = () => {
+      if (pc.iceConnectionState === 'failed') {
+        console.warn(`ICE连接与用户${targetUid}失败`)
         pc.close()
         this.peerConnections.delete(targetUid)
         this.onRemoteStreamRemovedCallback?.(targetUid)
@@ -212,6 +274,10 @@ export class VoiceChat {
 
   getPeerConnections(): Map<number, RTCPeerConnection> {
     return this.peerConnections
+  }
+
+  getVoiceRoomId(): number | null {
+    return this.voiceRoomId
   }
 }
 

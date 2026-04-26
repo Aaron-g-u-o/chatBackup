@@ -4,9 +4,9 @@ import com.abin.mallchat.common.chat.domain.entity.Message;
 import com.abin.mallchat.common.chat.domain.entity.msg.MessageExtra;
 import com.abin.mallchat.common.chatai.domain.ChatGPTContext;
 import com.abin.mallchat.common.chatai.domain.ChatGPTMsg;
-import com.abin.mallchat.common.chatai.domain.builder.ChatGPTContextBuilder;
 import com.abin.mallchat.common.chatai.domain.builder.ChatGPTMsgBuilder;
 import com.abin.mallchat.common.chatai.properties.ChatGPTProperties;
+import com.abin.mallchat.common.chatai.service.AIContextService;
 import com.abin.mallchat.common.chatai.utils.ChatGPTUtils;
 import com.abin.mallchat.common.common.constant.RedisKey;
 import com.abin.mallchat.common.common.domain.dto.FrequencyControlDTO;
@@ -31,13 +31,14 @@ import static com.abin.mallchat.common.common.service.frequencycontrol.Frequency
 @Slf4j
 @Component
 public class GPTChatAIHandler extends AbstractChatAIHandler {
-    /**
-     * GPTChatAIHandler限流前缀
-     */
+
     private static final String CHAT_FREQUENCY_PREFIX = "GPTChatAIHandler";
 
     @Autowired
     private ChatGPTProperties chatGPTProperties;
+
+    @Autowired
+    private AIContextService aiContextService;
 
     private static String AI_NAME;
 
@@ -78,7 +79,7 @@ public class GPTChatAIHandler extends AbstractChatAIHandler {
             frequencyControlDTO.setCount(chatGPTProperties.getLimit());
             frequencyControlDTO.setTime(1);
             return FrequencyControlUtil.executeWithFrequencyControl(TOTAL_COUNT_WITH_IN_FIX_TIME_FREQUENCY_CONTROLLER,
-                    frequencyControlDTO, // 限流参数
+                    frequencyControlDTO,
                     () -> sendRequestToGPT(message));
         } catch (FrequencyControlException e) {
             return "亲爱的,你今天找我聊了" + chatGPTProperties.getLimit() + "次了~人家累了~明天见";
@@ -87,13 +88,21 @@ public class GPTChatAIHandler extends AbstractChatAIHandler {
         }
     }
 
-
     private String sendRequestToGPT(Message message) {
-        ChatGPTContext context = buildContext(message);// 构建上下文
-        context = tailorContext(context);// 裁剪上下文
-        log.info("context = {}", context);
+        String prompt = message.getContent().replace("@" + AI_NAME, "").trim();
+        Long uid = message.getFromUid();
+        Long roomId = message.getRoomId();
+
+        ChatGPTContext context = buildContext(uid, roomId, prompt);
+        context = tailorContext(context);
+        
+        log.info("发送AI请求: uid={}, roomId={}, sessionId={}, msgCount={}", 
+            uid, roomId, context.getSessionId(), context.getMsg().size());
+
         String text;
         try {
+            saveUserMessage(context, prompt);
+
             Response response = ChatGPTUtils.create(chatGPTProperties.getKey())
                     .proxyUrl(chatGPTProperties.getProxyUrl())
                     .model(chatGPTProperties.getModelName())
@@ -102,9 +111,12 @@ public class GPTChatAIHandler extends AbstractChatAIHandler {
                     .message(context.getMsg())
                     .send();
             text = ChatGPTUtils.parseText(response);
-            ChatGPTMsg chatGPTMsg = ChatGPTMsgBuilder.assistantMsg(text);
-            context.addMsg(chatGPTMsg);
-            saveContext(context);
+
+            context.addMsg(ChatGPTMsgBuilder.assistantMsg(text));
+
+            saveAssistantMessage(context, text);
+
+            cacheContext(context);
         } catch (Exception e) {
             log.warn("gpt doChat warn:", e);
             text = "我累了，明天再聊吧";
@@ -112,33 +124,64 @@ public class GPTChatAIHandler extends AbstractChatAIHandler {
         return text;
     }
 
+    private ChatGPTContext buildContext(Long uid, Long roomId, String prompt) {
+        ChatGPTContext cachedContext = RedisUtils.get(
+            RedisKey.getKey(USER_CHAT_CONTEXT, uid, roomId), ChatGPTContext.class);
+
+        if (cachedContext != null && cachedContext.getSessionId() != null) {
+            log.debug("Redis缓存命中: uid={}, roomId={}, sessionId={}", uid, roomId, cachedContext.getSessionId());
+            cachedContext.addMsg(ChatGPTMsgBuilder.userMsg(prompt));
+            return cachedContext;
+        }
+
+        log.info("Redis缓存未命中，从数据库重建上下文: uid={}, roomId={}", uid, roomId);
+        ChatGPTContext context = aiContextService.buildContext(uid, roomId, 0, prompt);
+        return context;
+    }
+
     private ChatGPTContext tailorContext(ChatGPTContext context) {
         List<ChatGPTMsg> msg = context.getMsg();
-        Integer integer = ChatGPTUtils.countTokens(msg);
-        if (integer < (chatGPTProperties.getMaxTokens() - 500)) { // 用户的输入+ChatGPT的回答内容都会计算token 留500个token给ChatGPT回答
+        Integer totalTokens = ChatGPTUtils.countTokens(msg);
+        int tokenBudget = chatGPTProperties.getMaxTokens() - 500;
+        
+        if (totalTokens < tokenBudget) {
             return context;
         }
-        msg.remove(1);
-        return tailorContext(context);
-    }
-
-    private ChatGPTContext buildContext(Message message) {
-        String prompt = message.getContent().replace("@" + AI_NAME, "").trim();
-        Long uid = message.getFromUid();
-        Long roomId = message.getRoomId();
-        ChatGPTContext chatGPTContext = RedisUtils.get(RedisKey.getKey(USER_CHAT_CONTEXT, uid, roomId), ChatGPTContext.class);
-        if (chatGPTContext == null) {
-            chatGPTContext = ChatGPTContextBuilder.initContext(uid, roomId);
+        
+        while (msg.size() > 2 && ChatGPTUtils.countTokens(msg) >= tokenBudget) {
+            msg.remove(1);
         }
-        saveContext(chatGPTContext);
-        chatGPTContext.addMsg(ChatGPTMsgBuilder.userMsg(prompt));
-        return chatGPTContext;
+        
+        return context;
     }
 
-    private void saveContext(ChatGPTContext chatGPTContext) {
-        RedisUtils.set(RedisKey.getKey(USER_CHAT_CONTEXT, chatGPTContext.getUid(), chatGPTContext.getRoomId()), chatGPTContext, 5L, TimeUnit.MINUTES);
+    private void saveUserMessage(ChatGPTContext context, String prompt) {
+        if (context.getSessionId() == null) return;
+        try {
+            int tokenCount = aiContextService.calculateTokenCount(prompt);
+            aiContextService.saveMessage(context.getSessionId(), "user", prompt, tokenCount, null);
+            log.debug("保存用户消息: sessionId={}, tokens={}", context.getSessionId(), tokenCount);
+        } catch (Exception e) {
+            log.warn("保存用户消息失败", e);
+        }
     }
 
+    private void saveAssistantMessage(ChatGPTContext context, String text) {
+        if (context.getSessionId() == null || StringUtils.isBlank(text)) return;
+        try {
+            int tokenCount = aiContextService.calculateTokenCount(text);
+            aiContextService.saveMessage(context.getSessionId(), "assistant", text, tokenCount, null);
+            log.debug("保存AI回复: sessionId={}, tokens={}", context.getSessionId(), tokenCount);
+        } catch (Exception e) {
+            log.warn("保存AI回复失败", e);
+        }
+    }
+
+    private void cacheContext(ChatGPTContext context) {
+        RedisUtils.set(
+            RedisKey.getKey(USER_CHAT_CONTEXT, context.getUid(), context.getRoomId()),
+            context, 30L, TimeUnit.MINUTES);
+    }
 
     private Long userChatNumInrc(Long uid) {
         return RedisUtils.inc(RedisKey.getKey(RedisKey.USER_CHAT_NUM, uid), DateUtils.getEndTimeByToday().intValue(), TimeUnit.MILLISECONDS);
@@ -147,16 +190,13 @@ public class GPTChatAIHandler extends AbstractChatAIHandler {
     private Long getUserChatNum(Long uid) {
         Long num = RedisUtils.get(RedisKey.getKey(RedisKey.USER_CHAT_NUM, uid), Long.class);
         return num == null ? 0 : num;
-
     }
-
 
     @Override
     protected boolean supports(Message message) {
         if (!chatGPTProperties.isUse()) {
             return false;
         }
-        /* 前端传@信息后取消注释 */
 
         MessageExtra extra = message.getExtra();
         if (extra == null) {

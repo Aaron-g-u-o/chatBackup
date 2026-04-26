@@ -20,7 +20,7 @@
         </div>
       </div>
       
-      <div class="guild-item explore-guild" @click="showExploreDialog = true">
+      <div class="guild-item explore-guild" @click="navigateToDiscovery">
         <div class="guild-icon">
           <el-icon :size="24"><Compass /></el-icon>
         </div>
@@ -58,6 +58,37 @@
               type="textarea"
               placeholder="服务器描述（可选）"
             />
+          </el-form-item>
+          <el-form-item label="分类">
+            <el-select v-model="createForm.category" placeholder="选择分类">
+              <el-option
+                v-for="cat in categories"
+                :key="cat"
+                :label="cat"
+                :value="cat"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="标签">
+            <el-select v-model="createForm.tags" multiple placeholder="选择标签" collapse-tags collapse-tags-tooltip>
+              <el-option label="游戏" value="游戏" />
+              <el-option label="开黑" value="开黑" />
+              <el-option label="编程" value="编程" />
+              <el-option label="前端" value="前端" />
+              <el-option label="后端" value="后端" />
+              <el-option label="AI" value="AI" />
+              <el-option label="设计" value="设计" />
+              <el-option label="音乐" value="音乐" />
+              <el-option label="读书" value="读书" />
+              <el-option label="运动" value="运动" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="语言">
+            <el-select v-model="createForm.language" placeholder="选择语言">
+              <el-option label="中文" value="zh-CN" />
+              <el-option label="English" value="en-US" />
+              <el-option label="日本語" value="ja-JP" />
+            </el-select>
           </el-form-item>
           <el-form-item label="服务器类型">
             <el-radio-group v-model="createForm.isPublic">
@@ -164,11 +195,13 @@
 import { ref, onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus, Compass, Loading } from '@element-plus/icons-vue'
+import { useRouter } from 'vue-router'
 import { useGuildStore } from '@/stores/guild'
 import type { GuildType } from '@/services/guildTypes'
 import guildApis from '@/services/guildApis'
 
 const guildStore = useGuildStore()
+const router = useRouter()
 
 const showAddDialog = ref(false)
 const showExploreDialog = ref(false)
@@ -179,10 +212,14 @@ const joining = ref(false)
 const loadingPublic = ref(false)
 const publicGuilds = ref<GuildType[]>([])
 const joiningGuildId = ref<number | null>(null)
+const categories = ['游戏', '技术', '社交', '学习', '娱乐', '音乐', '艺术', '运动', '其他']
 const createForm = ref({
   name: '',
   description: '',
   isPublic: 1,
+  category: '其他',
+  tags: [] as string[],
+  language: 'zh-CN',
 })
 const joinForm = ref({
   inviteCode: '',
@@ -194,6 +231,10 @@ onMounted(() => {
 
 const selectGuild = (guild: GuildType) => {
   guildStore.setCurrentGuild(guild)
+}
+
+const navigateToDiscovery = () => {
+  router.push('/discovery')
 }
 
 const handlePaste = (event: ClipboardEvent) => {
@@ -213,16 +254,23 @@ const handleCreateGuild = async () => {
   
   creating.value = true
   try {
-    const guild = await guildStore.createGuild(
-      createForm.value.name,
-      undefined,
-      createForm.value.description,
-      createForm.value.isPublic,
-    )
+    const guild = await guildApis.createGuild({
+      name: createForm.value.name,
+      icon: undefined,
+      description: createForm.value.description,
+      isPublic: createForm.value.isPublic,
+      category: createForm.value.category,
+      tags: createForm.value.tags,
+      language: createForm.value.language,
+    })
     if (guild) {
+      await guildStore.fetchGuilds()
       showAddDialog.value = false
-      createForm.value = { name: '', description: '', isPublic: 1 }
-      guildStore.setCurrentGuild(guild)
+      createForm.value = { name: '', description: '', isPublic: 1, category: '其他', tags: [], language: 'zh-CN' }
+      const newGuild = guildStore.guilds.find(g => g.id === guild.id)
+      if (newGuild) {
+        guildStore.setCurrentGuild(newGuild)
+      }
       ElMessage.success('服务器创建成功')
     }
   } catch (error) {

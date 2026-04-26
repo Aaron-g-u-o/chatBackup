@@ -50,15 +50,21 @@ public class WebRTCSignalServiceImpl implements WebRTCSignalService {
             return;
         }
         
+        boolean isRoomUpdate = message instanceof com.abin.mallchat.common.voice.domain.vo.ws.WSVoiceRoomUpdate;
+        
         WSBaseResp<Object> resp = new WSBaseResp<>();
-        resp.setType(WSRespTypeEnum.VOICE_SIGNAL.getType());
+        resp.setType(isRoomUpdate ? WSRespTypeEnum.VOICE_ROOM_UPDATE.getType() : WSRespTypeEnum.VOICE_SIGNAL.getType());
         resp.setData(message);
         
         for (VoiceRoomMember member : members) {
             if (excludeUid != null && excludeUid.equals(member.getUid())) {
                 continue;
             }
-            webSocketService.sendToUid(resp, member.getUid());
+            try {
+                webSocketService.sendToUid(resp, member.getUid());
+            } catch (Exception e) {
+                log.warn("广播消息发送失败, uid={}, voiceRoomId={}", member.getUid(), voiceRoomId, e);
+            }
         }
     }
     

@@ -74,6 +74,8 @@ public class RedisKey {
      */
     public static final String USER_GLM2_TIME_LAST = "userGLM2UseTime:uid_%d";
 
+    public static final String DISCOVERY_RECOMMEND_STRING = "discovery:recommend:uid_%d_type_%d";
+
     public static String getKey(String key, Object... objects) {
         return BASE_KEY + String.format(key, objects);
     }

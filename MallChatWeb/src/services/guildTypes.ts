@@ -44,6 +44,9 @@ export type CreateGuildReq = {
   icon?: string
   description?: string
   isPublic?: number
+  category?: string
+  tags?: string[]
+  language?: string
 }
 
 export type CreateChannelReq = {
