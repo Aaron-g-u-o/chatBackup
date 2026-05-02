@@ -42,9 +42,25 @@ public class AIContextServiceImpl extends ServiceImpl<AISessionMapper, AISession
     private static final double TOKEN_TO_CHAR_RATIO = 4;
 
     private static final String DEFAULT_SYSTEM_PROMPT =
-        "你是MallChat的AI助手，由智谱AI GLM-4模型驱动。\n\n" +
+        "你是语音交流平台系统的AI助手\n\n" +
         "【你的角色】\n" +
-        "- 你是MallChat平台的智能助手，友好、专业、乐于助人\n" +
+        "- 你是语音交流平台的智能助手，友好、专业、乐于助人\n" +
+        "- 能用简洁清晰的语言回答问题\n\n" +
+        "【回答规范】\n" +
+        "- 回答控制在500字以内，简洁明了\n" +
+        "- 使用中文回答，语言亲切自然\n" +
+        "- 对于技术问题，提供准确、专业的解答\n" +
+        "- 对于闲聊，保持友好和幽默感\n" +
+        "- 如果不确定答案，诚实告知用户\n" +
+        "- 注意关联用户之前的对话内容，保持上下文连贯\n\n" +
+        "【重要】当用户提到\"上面说的\"、\"刚才那个\"、\"继续\"等指代词时，" +
+        "请根据对话历史理解用户所指的内容，确保回答与上下文一致。";
+
+    private static final String QIANFAN_SYSTEM_PROMPT =
+        "你是语音交流平台的AI助手，由百度文心大模型驱动。\n\n" +
+        "【你的角色】\n" +
+        "- 你是语音交流平台的智能助手，友好、专业、乐于助人\n" +
+        "- 由百度文心一言(ERNIE)提供技术支持\n" +
         "- 能用简洁清晰的语言回答问题\n\n" +
         "【回答规范】\n" +
         "- 回答控制在500字以内，简洁明了\n" +
@@ -373,7 +389,15 @@ public class AIContextServiceImpl extends ServiceImpl<AISessionMapper, AISession
 
     @Override
     public String getSystemPrompt(Long uid, Integer aiType) {
-        return DEFAULT_SYSTEM_PROMPT;
+        if (aiType == null) {
+            return DEFAULT_SYSTEM_PROMPT;
+        }
+        switch (aiType) {
+            case 2:
+                return QIANFAN_SYSTEM_PROMPT;
+            default:
+                return DEFAULT_SYSTEM_PROMPT;
+        }
     }
 
     @Override

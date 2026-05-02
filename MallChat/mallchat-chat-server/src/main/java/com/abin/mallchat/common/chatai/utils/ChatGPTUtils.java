@@ -87,11 +87,44 @@ public class ChatGPTUtils {
 
     public static String parseText(String body) {
         if (StringUtils.isBlank(body)) {
+            log.warn("parseText: body is blank");
             return "闹脾气了，等会再试试吧~";
         }
+        log.info("parseText: body length = {}, preview = {}", body.length(), 
+            body.length() > 500 ? body.substring(0, 500) + "..." : body);
+        
         StringBuilder sb = new StringBuilder();
         try {
+            if (!body.contains("data:")) {
+                log.info("Response is not SSE format, trying to parse as regular JSON");
+                try {
+                    JsonNode root = JsonUtils.toJsonNode(body);
+                    if (root.has("error")) {
+                        String errorMsg = root.path("error").path("message").asText();
+                        log.error("API returned error: {}", errorMsg);
+                        return "API报错: " + errorMsg;
+                    }
+                    JsonNode choices = root.path("choices");
+                    if (choices.isArray() && choices.size() > 0) {
+                        JsonNode first = choices.get(0);
+                        JsonNode message = first.path("message");
+                        if (!message.isMissingNode()) {
+                            String content = message.path("content").asText();
+                            if (StringUtils.isNotBlank(content)) {
+                                return content;
+                            }
+                        }
+                    }
+                    log.warn("Non-SSE response parse failed, body: {}", body);
+                } catch (Exception e) {
+                    log.warn("Failed to parse as regular JSON: {}", e.getMessage());
+                }
+                return "闹脾气了，等会再试试吧~";
+            }
+            
             String[] parts = body.split("data:");
+            log.info("SSE format detected, parts count: {}", parts.length);
+            
             for (String part : parts) {
                 String x = StringUtils.trimToEmpty(part);
                 if (StringUtils.isBlank(x)) {
@@ -104,7 +137,6 @@ public class ChatGPTUtils {
                 try {
                     root = JsonUtils.toJsonNode(x);
                 } catch (Exception ex) {
-                    // not a valid json chunk, skip
                     log.debug("skip invalid json chunk: {}", x);
                     continue;
                 }
@@ -132,7 +164,10 @@ public class ChatGPTUtils {
                     sb.append(text);
                 }
             }
-            return sb.toString();
+            
+            String result = sb.toString();
+            log.info("parseText result length: {}", result.length());
+            return result;
         } catch (Exception e) {
             log.error("parseText error e:", e);
             return "闹脾气了，等会再试试吧~";
@@ -201,16 +236,26 @@ public class ChatGPTUtils {
         paramMap.put("presence_penalty", presencePenalty);
         paramMap.put("stream", true);
 
-        log.info("paramMap >>> " + JsonUtils.toStr(paramMap));
+        String requestUrl = StringUtils.isNotBlank(proxyUrl) ? proxyUrl : URL;
+        String requestBody = JsonUtils.toStr(paramMap);
+        log.info("paramMap >>> " + requestBody);
+        log.info("Sending request to URL: {}", requestUrl);
+        
         Request request = new Request.Builder()
-                .url(StringUtils.isNotBlank(proxyUrl) ? proxyUrl : URL)
+                .url(requestUrl)
                 .addHeader("Content-Type", "application/json")
                 .addHeader("Authorization", headers.get("Authorization"))
-                .post(RequestBody.create(MediaType.parse("application/json"), JsonUtils.toStr(paramMap)))
+                .post(RequestBody.create(MediaType.parse("application/json"), requestBody))
                 .build();
-        return okHttpClient.newCall(request).execute();
-
-
+        
+        try {
+            Response response = okHttpClient.newCall(request).execute();
+            log.info("Response received - code: {}, message: {}", response.code(), response.message());
+            return response;
+        } catch (IOException e) {
+            log.error("API request failed: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     public static Integer countTokens(String messages) {
