@@ -12,8 +12,7 @@ import java.util.List;
  * 用户表情包 服务实现类
  * </p>
  *
- * @author <a href="https://github.com/zongzibinbin">abin</a>
- * @since 2023-07-09
+
  */
 @Service
 public class UserEmojiDao extends ServiceImpl<UserEmojiMapper, UserEmoji> {

@@ -18,8 +18,7 @@ import java.util.Objects;
 
 /**
  * 用户收到物品监听器
- *
- * @author zhongzb create on 2022/08/26
+
  */
 @Slf4j
 @Component

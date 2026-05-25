@@ -21,10 +21,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-/**
- * @author zhaoqichao
- * @date 2023/7/3 16:38
- */
+
 @Slf4j
 public abstract class AbstractUrlDiscover implements UrlDiscover {
     //链接识别的正则

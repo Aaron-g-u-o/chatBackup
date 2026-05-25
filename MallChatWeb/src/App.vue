@@ -24,6 +24,10 @@ import 'element-plus/theme-chalk/dark/css-vars.css'
   height: 100vh;
   overflow: hidden;
   background: var(--color-surface-0);
+  background-image: url('/bg-dark.jpg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
 }
 
 .app-background {
@@ -98,29 +102,5 @@ import 'element-plus/theme-chalk/dark/css-vars.css'
   }
 }
 
-@supports (background-image: url('@/assets/login_bg.webp')) {
-  .app-wrapper {
-    background-image: url('@/assets/login_bg.webp');
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: cover;
-  }
-  
-  .app-background {
-    opacity: 0.5;
-  }
-}
 
-@supports (background-image: url('@/assets/login_bg.jpg')) {
-  .app-wrapper {
-    background-image: url('@/assets/login_bg.jpg');
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: cover;
-  }
-  
-  .app-background {
-    opacity: 0.5;
-  }
-}
 </style>

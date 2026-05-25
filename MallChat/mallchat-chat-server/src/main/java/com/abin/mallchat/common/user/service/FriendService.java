@@ -13,9 +13,7 @@ import com.abin.mallchat.common.user.domain.vo.response.friend.FriendResp;
 import com.abin.mallchat.common.user.domain.vo.response.friend.FriendUnreadResp;
 
 /**
- * @author : limeng
  * @description : 好友
- * @date : 2023/07/19
  */
 public interface FriendService {
 

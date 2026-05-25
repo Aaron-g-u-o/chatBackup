@@ -5,9 +5,7 @@ import java.util.List;
 
 /**
  * 敏感词过滤
- *
- * @author zhaoyuhang
- * @date 2023/07/08
+
  */
 public interface SensitiveWordFilter {
     /**

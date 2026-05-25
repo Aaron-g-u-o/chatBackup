@@ -22,8 +22,7 @@ import java.util.Objects;
  * 用户背包表 服务类
  * </p>
  *
- * @author <a href="https://github.com/zongzibinbin">abin</a>
- * @since 2023-03-19
+
  */
 @Service
 public class UserBackpackServiceImpl implements IUserBackpackService {

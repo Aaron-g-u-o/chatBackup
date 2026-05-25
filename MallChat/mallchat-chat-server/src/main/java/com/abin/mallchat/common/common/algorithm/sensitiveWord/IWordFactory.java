@@ -4,9 +4,7 @@ import java.util.List;
 
 /**
  * 敏感词
- *
- * @author zhaoyuhang
- * @date 2023/07/09
+
  */
 public interface IWordFactory {
     /**

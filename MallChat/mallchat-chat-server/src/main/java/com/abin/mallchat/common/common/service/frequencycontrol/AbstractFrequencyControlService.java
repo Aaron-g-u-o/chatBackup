@@ -16,9 +16,6 @@ import java.util.stream.Collectors;
 /**
  * 抽象类频控服务 其他类如果要实现限流服务 直接注入使用通用限流类
  * 后期会通过继承此类实现令牌桶等算法
- *
- * @author linzhihan
- * @date 2023/07/03
  * @see TotalCountWithInFixTimeFrequencyController 通用限流类
  */
 @Slf4j

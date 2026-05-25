@@ -6,11 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.List;
 
-/**
- * wechat mp properties
- *
- * @author <a href="https://github.com/binarywang">Binary Wang</a>
- */
+
 @Data
 @ConfigurationProperties(prefix = "wx.mp")
 public class WxMpProperties {

@@ -17,9 +17,6 @@ import java.net.URI;
 
 /**
  * WebSocket协议类型的模拟客户端连接器类
- *
- * @author duyanjun
- * @since 2022/10/13 杜燕军 新建
  */
 @Slf4j
 public class WebSocketConnector {

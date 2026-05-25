@@ -4,10 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import org.jetbrains.annotations.Nullable;
 import org.jsoup.nodes.Document;
 
-/**
- * @author zhaoqichao
- * @date 2023/7/3 16:54
- */
+
 public class CommonUrlDiscover extends AbstractUrlDiscover {
     @Nullable
     @Override

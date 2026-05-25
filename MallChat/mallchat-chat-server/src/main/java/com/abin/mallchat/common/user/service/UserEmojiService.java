@@ -9,9 +9,7 @@ import java.util.List;
 
 /**
  * 用户表情包 Service
- *
- * @author: WuShiJie
- * @createTime: 2023/7/3 14:22
+
  */
 public interface UserEmojiService {
 
@@ -19,8 +17,7 @@ public interface UserEmojiService {
      * 表情包列表
      *
      * @return 表情包列表
-     * @author WuShiJie
-     * @createTime 2023/7/3 14:46
+
      **/
     List<UserEmojiResp> list(Long uid);
 
@@ -30,8 +27,7 @@ public interface UserEmojiService {
      * @param emojis 用户表情包
      * @param uid    用户ID
      * @return 表情包
-     * @author WuShiJie
-     * @createTime 2023/7/3 14:46
+
      **/
     ApiResult<IdRespVO> insert(UserEmojiReq emojis, Long uid);
 

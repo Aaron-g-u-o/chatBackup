@@ -17,9 +17,7 @@ import java.util.List;
 
 /**
  * 用户表情包
- *
- * @author: WuShiJie
- * @createTime: 2023/7/3 14:21
+
  */
 @RestController
 @RequestMapping("/capi/user/emoji")
@@ -37,8 +35,7 @@ public class UserEmojiController {
      * 表情包列表
      *
      * @return 表情包列表
-     * @author WuShiJie
-     * @createTime 2023/7/3 14:46
+
      **/
     @GetMapping("/list")
     @ApiOperation("表情包列表")
@@ -52,8 +49,7 @@ public class UserEmojiController {
      *
      * @param req 用户表情包
      * @return 表情包
-     * @author WuShiJie
-     * @createTime 2023/7/3 14:46
+
      **/
     @PostMapping()
     @ApiOperation("新增表情包")
@@ -65,8 +61,7 @@ public class UserEmojiController {
      * 删除表情包
      *
      * @return 删除结果
-     * @author WuShiJie
-     * @createTime 2023/7/3 14:46
+
      **/
     @DeleteMapping()
     @ApiOperation("删除表情包")

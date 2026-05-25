@@ -11,9 +11,6 @@ import java.util.List;
  * <p>
  * 群聊房间表 服务实现类
  * </p>
- *
- * @author <a href="https://github.com/zongzibinbin">abin</a>
- * @since 2023-07-22
  */
 @Service
 public class RoomGroupDao extends ServiceImpl<RoomGroupMapper, RoomGroup> {

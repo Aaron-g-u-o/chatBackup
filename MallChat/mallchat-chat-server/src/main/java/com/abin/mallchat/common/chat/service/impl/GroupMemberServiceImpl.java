@@ -26,8 +26,6 @@ import java.util.List;
 import static com.abin.mallchat.common.chat.constant.GroupConst.MAX_MANAGE_COUNT;
 
 /**
- * @Author Kkuil
- * @Date 2023/10/24 15:45
  * @Description 群成员服务类
  */
 @Service

@@ -1,8 +1,6 @@
 package com.abin.mallchat.common.common.constant;
 
-/**
- * @author zhongzb create on 2021/06/10
- */
+
 public interface MQConstant {
 
     /**

@@ -14,9 +14,7 @@ import static com.abin.mallchat.common.common.service.frequencycontrol.Frequency
 
 /**
  * 抽象类频控服务 -使用redis实现 固定时间内不超过固定次数的限流类
- *
- * @author linzhihan
- * @date 2023/07/03
+
  */
 @Slf4j
 @Service

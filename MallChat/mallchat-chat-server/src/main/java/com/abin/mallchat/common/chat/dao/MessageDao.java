@@ -23,9 +23,6 @@ import java.util.Objects;
  * <p>
  * 消息表 服务实现类
  * </p>
- *
- * @author <a href="https://github.com/zongzibinbin">abin</a>
- * @since 2023-03-25
  */
 @Service
 public class MessageDao extends ServiceImpl<MessageMapper, Message> {

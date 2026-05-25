@@ -29,8 +29,7 @@ import javax.validation.Valid;
  * 好友相关接口
  * </p>
  *
- * @author <a href="https://github.com/zongzibinbin">abin</a>
- * @since 2023-07-16
+
  */
 @RestController
 @RequestMapping("/capi/user/friend")

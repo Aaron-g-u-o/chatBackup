@@ -48,9 +48,7 @@ import java.util.stream.Collectors;
 import static com.abin.mallchat.common.user.domain.enums.ApplyStatusEnum.WAIT_APPROVAL;
 
 /**
- * @author : limeng
  * @description : 好友
- * @date : 2023/07/19
  */
 @Slf4j
 @Service

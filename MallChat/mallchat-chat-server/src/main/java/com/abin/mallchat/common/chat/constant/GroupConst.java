@@ -1,8 +1,6 @@
 package com.abin.mallchat.common.chat.constant;
 
 /**
- * @Author Kkuil
- * @Date 2023/10/24 16:06
  * @Description 群常量
  */
 public class GroupConst {

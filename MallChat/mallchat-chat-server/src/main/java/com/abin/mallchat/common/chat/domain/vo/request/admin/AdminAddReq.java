@@ -8,8 +8,6 @@ import javax.validation.constraints.Size;
 import java.util.List;
 
 /**
- * @Author Kkuil
- * @Date 2023/10/24 12:46
  * @Description 添加管理员请求信息
  */
 @Data

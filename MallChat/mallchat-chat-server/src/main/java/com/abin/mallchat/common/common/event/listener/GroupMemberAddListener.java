@@ -29,8 +29,6 @@ import java.util.stream.Collectors;
 
 /**
  * 添加群成员监听器
- *
- * @author zhongzb create on 2022/08/26
  */
 @Slf4j
 @Component

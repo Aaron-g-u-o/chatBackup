@@ -4,9 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * @author : limeng
  * @description : 申请阅读状态枚举
- * @date : 2023/07/20
  */
 @Getter
 @AllArgsConstructor

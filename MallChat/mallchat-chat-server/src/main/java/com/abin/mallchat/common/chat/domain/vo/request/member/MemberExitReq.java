@@ -9,8 +9,6 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.NotNull;
 
 /**
- * @Author Kkuil
- * @Date 2023/10/30 11:49
  * @Description 退出群聊
  */
 @Data

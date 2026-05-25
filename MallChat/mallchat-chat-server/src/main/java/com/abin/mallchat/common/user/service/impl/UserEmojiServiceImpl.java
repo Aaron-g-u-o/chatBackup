@@ -18,9 +18,7 @@ import java.util.stream.Collectors;
 
 /**
  * 用户表情包 ServiceImpl
- *
- * @author: WuShiJie
- * @createTime: 2023/7/3 14:23
+
  */
 @Service
 @Slf4j
@@ -45,8 +43,7 @@ public class UserEmojiServiceImpl implements UserEmojiService {
      *
      * @param uid 用户ID
      * @return 表情包
-     * @author WuShiJie
-     * @createTime 2023/7/3 14:46
+
      **/
     @Override
     @RedissonLock(key = "#uid")

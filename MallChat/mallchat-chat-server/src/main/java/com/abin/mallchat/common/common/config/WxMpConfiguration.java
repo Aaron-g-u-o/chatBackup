@@ -22,8 +22,6 @@ import static me.chanjar.weixin.common.api.WxConsts.XmlMsgType.EVENT;
 
 /**
  * wechat mp configuration
- *
- * @author <a href="https://github.com/binarywang">Binary Wang</a>
  */
 @AllArgsConstructor
 @Configuration

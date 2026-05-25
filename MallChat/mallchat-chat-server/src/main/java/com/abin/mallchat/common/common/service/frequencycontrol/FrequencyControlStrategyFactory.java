@@ -7,9 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 限流策略工厂
- *
- * @author linzhihan
- * @date 2023/07/03
+
  */
 public class FrequencyControlStrategyFactory {
     /**

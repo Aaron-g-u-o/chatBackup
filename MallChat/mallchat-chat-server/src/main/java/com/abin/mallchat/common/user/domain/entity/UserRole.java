@@ -14,9 +14,7 @@ import java.util.Date;
  * <p>
  * 用户角色关系表
  * </p>
- *
- * @author <a href="https://github.com/zongzibinbin">abin</a>
- * @since 2023-06-04
+
  */
 @Data
 @EqualsAndHashCode(callSuper = false)

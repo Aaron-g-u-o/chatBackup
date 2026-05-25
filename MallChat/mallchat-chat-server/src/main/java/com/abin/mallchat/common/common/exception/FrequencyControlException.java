@@ -4,9 +4,6 @@ import lombok.Data;
 
 /**
  * 自定义限流异常
- *
- * @author linzhihan
- * @date 2023/07/034
  */
 @Data
 public class FrequencyControlException extends RuntimeException {

@@ -8,9 +8,7 @@ import java.util.List;
 
 /**
  * 限流工具类 提供编程式的限流调用方法
- *
- * @author linzhihan
- * @date 2023/07/03
+
  */
 public class FrequencyControlUtil {
 

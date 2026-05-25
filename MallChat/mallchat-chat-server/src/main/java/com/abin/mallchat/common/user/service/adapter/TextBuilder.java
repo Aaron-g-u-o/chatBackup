@@ -5,9 +5,7 @@ import me.chanjar.weixin.mp.bean.message.WxMpXmlMessage;
 import me.chanjar.weixin.mp.bean.message.WxMpXmlOutMessage;
 import me.chanjar.weixin.mp.bean.message.WxMpXmlOutTextMessage;
 
-/**
- * @author <a href="https://github.com/binarywang">Binary Wang</a>
- */
+
 public class TextBuilder {
 
     public WxMpXmlOutMessage build(String content, WxMpXmlMessage wxMessage,

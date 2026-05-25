@@ -12,9 +12,7 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
- * @author: Quan
  * @description:    文件基类
- * @date: 2023/10/07 下午 2:47
  */
 
 

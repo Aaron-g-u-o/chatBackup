@@ -8,8 +8,7 @@ import com.abin.mallchat.oss.domain.OssResp;
  * oss 服务类
  * </p>
  *
- * @author <a href="https://github.com/zongzibinbin">abin</a>
- * @since 2023-03-19
+
  */
 public interface OssService {
 

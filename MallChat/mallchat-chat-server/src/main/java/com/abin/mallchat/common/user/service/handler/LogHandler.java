@@ -10,9 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
-/**
- * @author <a href="https://github.com/binarywang">Binary Wang</a>
- */
+
 @Component
 @Slf4j
 public class LogHandler extends AbstractHandler {

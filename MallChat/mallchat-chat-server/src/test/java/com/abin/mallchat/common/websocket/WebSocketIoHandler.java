@@ -10,9 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * WebSocket协议类型的模拟客户端IO处理器类
- *
- * @author duyanjun
- * @since 2022/10/13 杜燕军 新建
  */
 @Slf4j
 public class WebSocketIoHandler extends SimpleChannelInboundHandler<Object> {

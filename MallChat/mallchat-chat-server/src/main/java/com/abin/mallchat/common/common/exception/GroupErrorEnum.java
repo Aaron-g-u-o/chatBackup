@@ -4,8 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * @Author Kkuil
- * @Date 2023/10/24 15:50
  * @Description 群异常码
  */
 @AllArgsConstructor

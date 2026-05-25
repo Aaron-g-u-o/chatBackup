@@ -12,8 +12,7 @@ import java.util.List;
  * 功能物品配置表 服务实现类
  * </p>
  *
- * @author <a href="https://github.com/zongzibinbin">abin</a>
- * @since 2023-03-19
+
  */
 @Service
 public class ItemConfigDao extends ServiceImpl<ItemConfigMapper, ItemConfig> {

@@ -7,10 +7,6 @@ import org.jsoup.nodes.Document;
 import javax.annotation.Nullable;
 import java.util.Map;
 
-/**
- * @author zhaoqichao
- * @date 2023/7/3 16:34
- */
 public interface UrlDiscover {
 
 

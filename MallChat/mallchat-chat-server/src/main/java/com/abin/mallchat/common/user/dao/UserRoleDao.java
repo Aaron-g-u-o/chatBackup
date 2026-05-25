@@ -12,9 +12,7 @@ import java.util.Objects;
  * <p>
  * 用户角色关系表 服务实现类
  * </p>
- *
- * @author <a href="https://github.com/zongzibinbin">abin</a>
- * @since 2023-06-04
+
  */
 @Service
 public class UserRoleDao extends ServiceImpl<UserRoleMapper, UserRole> {

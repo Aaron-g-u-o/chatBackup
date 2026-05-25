@@ -12,9 +12,6 @@ import java.util.Date;
  * <p>
  * 房间表 服务实现类
  * </p>
- *
- * @author <a href="https://github.com/zongzibinbin">abin</a>
- * @since 2023-07-16
  */
 @Service
 public class RoomDao extends ServiceImpl<RoomMapper, Room> implements IService<Room> {

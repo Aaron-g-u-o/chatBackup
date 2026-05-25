@@ -10,9 +10,6 @@ import java.util.concurrent.TimeUnit;
 @NoArgsConstructor
 @AllArgsConstructor
 /** 限流策略定义
- * @author linzhihan
- * @date 2023/07/03
- *
  */
 public class FrequencyControlDTO {
     /**

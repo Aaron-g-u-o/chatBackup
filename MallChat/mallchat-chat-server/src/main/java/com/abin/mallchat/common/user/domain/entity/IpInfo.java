@@ -12,8 +12,7 @@ import java.util.Optional;
  * 用户ip信息
  * </p>
  *
- * @author <a href="https://github.com/zongzibinbin">abin</a>
- * @since 2023-03-19
+
  */
 @Data
 public class IpInfo implements Serializable {

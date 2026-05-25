@@ -14,8 +14,7 @@ import java.util.List;
  * 用户表 服务类
  * </p>
  *
- * @author <a href="https://github.com/zongzibinbin">abin</a>
- * @since 2023-03-19
+
  */
 public interface UserService {
 

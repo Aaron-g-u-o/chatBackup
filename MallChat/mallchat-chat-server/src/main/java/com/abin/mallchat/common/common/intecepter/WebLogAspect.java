@@ -24,7 +24,6 @@ import java.util.stream.Stream;
 /**
  * 日志切面
  *
- * @author wayne
  */
 @Aspect
 @Slf4j

@@ -15,8 +15,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 /**
  * 消息撤回监听器
- *
- * @author zhongzb create on 2022/08/26
+
  */
 @Slf4j
 @Component

@@ -27,9 +27,6 @@ import static com.abin.mallchat.common.chat.domain.enums.GroupRoleEnum.ADMIN_LIS
  * <p>
  * 群成员表 服务实现类
  * </p>
- *
- * @author <a href="https://github.com/zongzibinbin">abin</a>
- * @since 2023-07-16
  */
 @Service
 public class GroupMemberDao extends ServiceImpl<GroupMemberMapper, GroupMember> {
